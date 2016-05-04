@@ -1,0 +1,58 @@
+// If you would like more information on the gradle-appengine-plugin please refer to the github page
+// https://github.com/GoogleCloudPlatform/gradle-appengine-plugin
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.google.appengine:gradle-appengine-plugin:$rootProject.ext.googleAppEngineVersion"
+    }
+}
+
+repositories {
+    jcenter();
+    mavenCentral();
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'appengine'
+
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
+dependencies {
+    appengineSdk "com.google.appengine:appengine-java-sdk:$rootProject.ext.googleAppEngineVersion"
+
+    compile "com.google.appengine:appengine-endpoints:$rootProject.ext.googleAppEngineVersion"
+    compile "com.google.appengine:appengine-endpoints-deps:$rootProject.ext.googleAppEngineVersion"
+
+    // Firebase client to access HN New API.
+    compile 'com.firebase:firebase-client-jvm:2.2.4'
+
+    // Goose library to extract content.
+    compile 'com.gravity:goose:2.1.22'
+
+    compile 'javax.servlet:servlet-api:2.5'
+
+    compile "com.googlecode.objectify:objectify:${rootProject.ext.objectifyVersion}"
+
+    testCompile "junit:junit:$rootProject.ext.junitVersion"
+    testCompile "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
+    testCompile "com.google.appengine:appengine-testing:$rootProject.ext.googleAppEngineVersion"
+    testCompile "com.google.appengine:appengine-api-stubs:$rootProject.ext.googleAppEngineVersion"
+    testCompile "org.powermock:powermock-module-junit4:$rootProject.ext.powerMockito"
+    testCompile "org.powermock:powermock-api-mockito:$rootProject.ext.powerMockito"
+}
+
+appengine {
+    downloadSdk = true
+    appcfg {
+        oauth2 = true
+    }
+    endpoints {
+        getClientLibsOnBuild = true
+        getDiscoveryDocsOnBuild = true
+    }
+}
