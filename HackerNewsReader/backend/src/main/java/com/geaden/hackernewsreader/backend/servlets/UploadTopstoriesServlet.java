@@ -10,10 +10,12 @@ import com.geaden.hackernewsreader.backend.config.Constants;
 import com.geaden.hackernewsreader.backend.domain.Story;
 import com.geaden.hackernewsreader.backend.firebase.FirebaseFactory;
 import com.geaden.hackernewsreader.backend.goose.GooseFactory;
+import com.googlecode.objectify.Key;
 import com.gravity.goose.Article;
 import com.gravity.goose.Goose;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -38,6 +40,9 @@ public class UploadTopstoriesServlet extends HttpServlet {
         // Create a new Firebase instance
         Query topStories = FirebaseFactory.create(Constants.HACKER_NEWS_API_STORIES)
                 .limitToFirst(Constants.NUMBER_OF_STORIES);
+        // Delete previously stored stories...
+        List<Key<Story>> storyKeys = ofy().load().type(Story.class).keys().list();
+        ofy().delete().keys(storyKeys).now();
         topStories.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -48,10 +53,14 @@ public class UploadTopstoriesServlet extends HttpServlet {
                         @Override
                         public void onDataChange(DataSnapshot storySnapshot) {
                             Story story = storySnapshot.getValue(Story.class);
-                            Goose goose = GooseFactory.create();
-                            Article extracted = goose.extractContent(story.getUrl());
-                            story.setContent(extracted.cleanedArticleText());
-                            story.setImageUrl(extracted.topImage().getImageSrc());
+                            // TODO: Work on special cases, like PDF, or file...
+                            if (!story.getUrl().toLowerCase().endsWith(".pdf")) {
+                                log.info("URL " + story.getUrl());
+                                Goose goose = GooseFactory.create();
+                                Article extracted = goose.extractContent(story.getUrl());
+                                story.setContent(extracted.cleanedArticleText());
+                                story.setImageUrl(extracted.topImage().getImageSrc());
+                            }
                             // TODO: retrieve comments...
                             // Save story to database.
                             ofy().save().entity(story).now();
@@ -70,5 +79,8 @@ public class UploadTopstoriesServlet extends HttpServlet {
                 log.warning(firebaseError.getMessage());
             }
         });
+        // We're done yet...
+        resp.setContentType("application/json");
+        resp.getWriter().write("{\"result\": \"done\"}");
     }
 }

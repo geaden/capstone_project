@@ -6,7 +6,7 @@ import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyService;
 
 /**
- * {}.
+ * Objectify Service to register entities.
  *
  * @author Gennady Denisov
  */
@@ -15,6 +15,10 @@ public class OfyService {
      * This static block ensure the entity registration.
      */
     static {
+        register();
+    }
+
+    static void register() {
         factory().register(Story.class);
     }
 

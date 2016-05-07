@@ -25,11 +25,14 @@ targetCompatibility = JavaVersion.VERSION_1_7
 dependencies {
     appengineSdk "com.google.appengine:appengine-java-sdk:$rootProject.ext.googleAppEngineVersion"
 
+    compile "com.google.appengine:appengine-api-1.0-sdk:$rootProject.ext.googleAppEngineVersion"
     compile "com.google.appengine:appengine-endpoints:$rootProject.ext.googleAppEngineVersion"
     compile "com.google.appengine:appengine-endpoints-deps:$rootProject.ext.googleAppEngineVersion"
 
     // Firebase client to access HN New API.
-    compile 'com.firebase:firebase-client-jvm:2.2.4'
+    compile 'com.firebase:firebase-client-jvm:2.5.0'
+    
+    compile 'org.apache.httpcomponents:httpclient:4.5.1'
 
     // Goose library to extract content.
     compile 'com.gravity:goose:2.1.22'
@@ -48,9 +51,14 @@ dependencies {
 
 appengine {
     downloadSdk = true
+
     appcfg {
         oauth2 = true
+        app {
+            id = 'hackernewsreader-1304'
+        }
     }
+
     endpoints {
         getClientLibsOnBuild = true
         getDiscoveryDocsOnBuild = true

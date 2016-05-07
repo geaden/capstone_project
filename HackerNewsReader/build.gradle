@@ -31,7 +31,7 @@ ext {
     buildToolsVersion = '23.0.2'
 
     // Backend dependencies
-    googleAppEngineVersion = '1.9.32'
+    googleAppEngineVersion = '1.9.34'
 
     // Objectify version
     objectifyVersion = '5.1.10'

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" version="2.5">
-   <servlet>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+    <servlet>
         <servlet-name>SystemServiceServlet</servlet-name>
         <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
         <init-param>
@@ -15,7 +15,8 @@
 
     <servlet>
         <servlet-name>UploadtopStoriesServlet</servlet-name>
-        <servlet-class>com.geaden.hackernewsreader.backend.servlets.UploadTopstoriesServlet</servlet-class>
+        <servlet-class>com.geaden.hackernewsreader.backend.servlets.UploadTopstoriesServlet
+        </servlet-class>
 
     </servlet>
 
@@ -23,6 +24,19 @@
         <servlet-name>UploadtopStoriesServlet</servlet-name>
         <url-pattern>/upload</url-pattern>
     </servlet-mapping>
+
+    <!-- Configure Objectify Filter -->
+    <filter>
+        <filter-name>ObjectifyFilter</filter-name>
+        <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ObjectifyFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <listener>
+        <listener-class>com.geaden.hackernewsreader.backend.service.OfyHelper</listener-class>
+    </listener>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
