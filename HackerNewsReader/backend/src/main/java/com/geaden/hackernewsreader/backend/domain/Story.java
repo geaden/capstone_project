@@ -1,6 +1,8 @@
 package com.geaden.hackernewsreader.backend.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.api.server.spi.config.AnnotationBoolean;
+import com.google.api.server.spi.config.ApiResourceProperty;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
@@ -44,6 +46,12 @@ public class Story {
      * List of keys of story comments.
      */
     private List<Key<Comment>> comments;
+
+    /**
+     * List of kids, returned from HN API.
+     */
+    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+    private List<String> kids;
 
     private String url;
 
@@ -125,6 +133,14 @@ public class Story {
         this.url = url;
     }
 
+    public List<String> getKids() {
+        return kids;
+    }
+
+    public void setKids(List<String> kids) {
+        this.kids = kids;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Story{");
@@ -137,6 +153,7 @@ public class Story {
         sb.append(", imageUrl='").append(imageUrl).append('\'');
         sb.append(", score=").append(score);
         sb.append(", url='").append(url).append('\'');
+        sb.append("}");
         return sb.toString();
     }
 }

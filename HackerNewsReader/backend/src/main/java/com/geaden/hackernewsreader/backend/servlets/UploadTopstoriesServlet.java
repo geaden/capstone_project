@@ -9,12 +9,12 @@ import com.firebase.client.ValueEventListener;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerPipeServiceFactory;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerpipeContentExtractionService;
 import com.geaden.hackernewsreader.backend.config.Constants;
+import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Content;
 import com.geaden.hackernewsreader.backend.domain.Story;
 import com.geaden.hackernewsreader.backend.firebase.FirebaseFactory;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
-import com.googlecode.objectify.util.Closeable;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,11 +39,15 @@ public class UploadTopstoriesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.entering(UploadTopstoriesServlet.class.getName(), "doGet");
+        ObjectifyService.begin();
         // Create a new Firebase instance
         Query topStories = FirebaseFactory.create(Constants.HACKER_NEWS_API_STORIES)
                 .limitToFirst(Constants.NUMBER_OF_STORIES);
         // Delete previously stored stories...
+        List<Key<Comment>> commentKeys = ofy().load().type(Comment.class).keys().list();
         List<Key<Story>> storyKeys = ofy().load().type(Story.class).keys().list();
+        // TODO: Do not delete stories that are bookmarked...
+        ofy().delete().keys(commentKeys).now();
         ofy().delete().keys(storyKeys).now();
         topStories.addValueEventListener(new ValueEventListener() {
             @Override
@@ -54,11 +58,9 @@ public class UploadTopstoriesServlet extends HttpServlet {
                     storyRef.child(storyId).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot storySnapshot) {
-                            Closeable session = ObjectifyService.begin();
-                            Story story = storySnapshot.getValue(Story.class);
-                            // TODO: Work on special cases, like PDF, or file...
+                            final Story story = storySnapshot.getValue(Story.class);
+                            // TODO: Work on special cases, like PDF, or other file...
                             if (!story.getUrl().toLowerCase().endsWith(".pdf")) {
-                                log.info("URL " + story.getUrl());
                                 BoilerpipeContentExtractionService boilerpipeContentExtractionService =
                                         BoilerPipeServiceFactory.create();
                                 Content content = boilerpipeContentExtractionService.content(story.getUrl());
@@ -66,10 +68,30 @@ public class UploadTopstoriesServlet extends HttpServlet {
                                 story.setImageUrl(content.getImage());
                                 log.info(story.toString());
                             }
-                            // TODO: retrieve comments...
                             // Save story to database.
-                            ofy().save().entity(story).now();
-                            session.close();
+                            ObjectifyService.begin();
+                            final Key<Story> storyKey = ofy().save().entity(story).now();
+                            // Retrieve comments for a story...
+                            for (String kid : story.getKids()) {
+                                final Firebase commentRef = FirebaseFactory.create(Constants.HACKER_NEWS_API_ITEM);
+                                commentRef.child(kid).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        Comment comment = dataSnapshot.getValue(Comment.class);
+                                        if (comment.getType().equals(Comment.COMMENT_TYPE)) {
+                                            comment.setStoryKey(storyKey);
+                                            log.info("Saving comment... " + comment.toString());
+                                            ObjectifyService.begin();
+                                            ofy().save().entity(comment).now();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(FirebaseError firebaseError) {
+                                        log.warning("Failed to get comment. " + firebaseError.getMessage());
+                                    }
+                                });
+                            }
                         }
 
                         @Override

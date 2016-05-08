@@ -8,17 +8,24 @@ package com.geaden.hackernewsreader.backend.spi;
 
 import com.geaden.hackernewsreader.backend.config.Constants;
 import com.geaden.hackernewsreader.backend.domain.AppEngineUser;
+import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Profile;
 import com.geaden.hackernewsreader.backend.domain.Story;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
+import com.google.api.server.spi.response.ConflictException;
+import com.google.api.server.spi.response.ForbiddenException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.server.spi.response.UnauthorizedException;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.com.google.api.client.util.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.VoidWork;
+import com.googlecode.objectify.Work;
 
 import java.util.Collection;
 import java.util.List;
@@ -45,16 +52,130 @@ public class HackernewsApi {
     private static final Logger log = Logger.getLogger(HackernewsApi.class.getName());
 
     /**
+     * Method to extract user friendly name from email.
+     *
+     * @param email the email.
+     * @return display name.
+     */
+    private static String extractDefaultDisplayNameFromEmail(String email) {
+        return email == null ? null : email.substring(0, email.indexOf("@"));
+    }
+
+    /**
+     * Helper method to get Profile from the provided user and its id.
+     *
+     * @param user   the User to get profile for.
+     * @param userId the user id.
+     * @return obtained profile.
+     */
+    private static Profile getProfileFromUser(User user, String userId) {
+        // First fetch it from the datastore.
+        Profile profile = ofy().load().key(
+                Key.create(Profile.class, userId)).now();
+        if (profile == null) {
+            // Create a new Profile if not exist.
+            String email = user.getEmail();
+            profile = new Profile(userId,
+                    extractDefaultDisplayNameFromEmail(email), email);
+        }
+        return profile;
+    }
+
+    /**
+     * Just a wrapper for Boolean.
+     */
+    public static class WrappedBoolean {
+
+        private final Boolean result;
+
+        public WrappedBoolean(Boolean result) {
+            this.result = result;
+        }
+
+        public Boolean getResult() {
+            return result;
+        }
+    }
+
+    /**
+     * A wrapper class that can embrace a generic result or some kind of exception.
+     * <p/>
+     * Use this wrapper class for the return type of objectify transaction.
+     * <pre>
+     * {@code
+     * // The transaction that returns Story object.
+     * TxResult<Story> result = ofy().transact(new Work<TxResult<Story>>() {
+     *     public TxResult<Story> run() {
+     *         // Code here.
+     *         // To throw 404
+     *         return new TxResult<>(new NotFoundException("No such story"));
+     *         // To return a story.
+     *         Story story = somehow.getStory();
+     *         return new TxResult<>(story);
+     *     }
+     * }
+     * // Actually the NotFoundException will be thrown here.
+     * return result.getResult();
+     * </pre>
+     *
+     * @param <ResultType> The type of the actual return object.
+     */
+    private static class TxResult<ResultType> {
+
+        private ResultType result;
+
+        private Throwable exception;
+
+        private TxResult(ResultType result) {
+            this.result = result;
+        }
+
+        private TxResult(Throwable exception) {
+            if (exception instanceof NotFoundException ||
+                    exception instanceof ForbiddenException ||
+                    exception instanceof ConflictException) {
+                this.exception = exception;
+            } else {
+                throw new IllegalArgumentException("Exception not supported.");
+            }
+        }
+
+        private ResultType getResult() throws NotFoundException, ForbiddenException, ConflictException {
+            if (exception instanceof NotFoundException) {
+                throw (NotFoundException) exception;
+            }
+            if (exception instanceof ForbiddenException) {
+                throw (ForbiddenException) exception;
+            }
+            if (exception instanceof ConflictException) {
+                throw (ConflictException) exception;
+            }
+            return result;
+        }
+    }
+
+
+    /**
      * Method to get all top stories (limited to 200 items).
      *
      * @return current top stories from the hacker news.
      */
     @ApiMethod(name = "getTopstories", path = "topstories", httpMethod = ApiMethod.HttpMethod.GET)
     public List<Story> getTopstories() {
-        return ofy().load().type(Story.class)
-                .order("-time")
-                .limit(Constants.NUMBER_OF_STORIES)
-                .list();
+        final List<Story> topstories = Lists.newArrayList();
+        ObjectifyService.run(new VoidWork() {
+            @Override
+            public void vrun() {
+                List<Story> stories = ofy().load().type(Story.class)
+                        .order("-time")
+                        .limit(Constants.NUMBER_OF_STORIES)
+                        .list();
+                for (Story story : stories) {
+                    topstories.add(story);
+                }
+            }
+        });
+        return topstories;
     }
 
     /**
@@ -75,6 +196,23 @@ public class HackernewsApi {
             throw new NotFoundException("No story found with key: " + storyId);
         }
         return story;
+    }
+
+    /**
+     * Returns list of comments by a story.
+     *
+     * @param storyId the story id.
+     * @return list of comments for that story.
+     * @throws NotFoundException
+     */
+    @ApiMethod(
+            name = "getComments",
+            path = "topstories/{id}/comments",
+            httpMethod = ApiMethod.HttpMethod.GET
+    )
+    public List<Comment> getStoryComments(@Named("id") long storyId) throws NotFoundException {
+        Key<Story> storyKey = Key.create(Story.class, storyId);
+        return ofy().load().type(Comment.class).ancestor(storyKey).list();
     }
 
     /**
@@ -102,6 +240,103 @@ public class HackernewsApi {
             bookmarkedStories.add(Key.<Story>create(bookmarkedStoryKey));
         }
         return ofy().load().keys(bookmarkedStories).values();
+    }
+
+    /**
+     * Method to bookmark a story for certain user.
+     *
+     * @param user    the user to add bookmark to.
+     * @param storyId the story id to bookmark.
+     * @return result of bookmarking.
+     * @throws UnauthorizedException
+     * @throws NotFoundException
+     * @throws ConflictException
+     * @throws ForbiddenException
+     */
+    @ApiMethod(
+            name = "bookmarkStory",
+            path = "topstories/{id}/bookmark",
+            httpMethod = ApiMethod.HttpMethod.POST
+    )
+    public WrappedBoolean bookmarkStory(final User user, @Named("id") final long storyId) throws UnauthorizedException,
+            NotFoundException, ConflictException, ForbiddenException {
+        if (null == user) {
+            throw new UnauthorizedException("Authorization required.");
+        }
+        final String userId = getUserId(user);
+        TxResult<Boolean> result = ofy().transact(new Work<TxResult<Boolean>>() {
+            @Override
+            public TxResult<Boolean> run() {
+                Key<Story> storyKey = Key.create(Story.class, storyId);
+                Story story = ofy().load().key(storyKey).now();
+                // 404 when there is no story with the given storyId.
+                if (story == null) {
+                    return new TxResult<>(new NotFoundException(
+                            "No Story found with key: " + storyId));
+                }
+                // Bookmarking happens here.
+                Profile profile = getProfileFromUser(user, userId);
+                String storyKeyString = KeyFactory.keyToString(storyKey.getRaw());
+                if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
+                    return new TxResult<>(new ConflictException("You have already bookmarked this story"));
+                } else {
+                    profile.addToBookmarkedStoriesKeys(storyKeyString);
+                    ofy().save().entity(profile).now();
+                    return new TxResult<>(true);
+                }
+            }
+        });
+        // NotFoundException is actually thrown here.
+        return new WrappedBoolean(result.getResult());
+    }
+
+    /**
+     * Method to bookmark a story for certain user.
+     *
+     * @param user    the user to add bookmark to.
+     * @param storyId the story id to bookmark.
+     * @return result of bookmarking.
+     * @throws UnauthorizedException
+     * @throws NotFoundException
+     * @throws ConflictException
+     * @throws ForbiddenException
+     */
+    @ApiMethod(
+            name = "unbookmarkStory",
+            path = "topstories/{id}/bookmark",
+            httpMethod = ApiMethod.HttpMethod.DELETE
+    )
+    public WrappedBoolean unbookmarkStory(final User user, @Named("id") final long storyId) throws
+            UnauthorizedException, NotFoundException, ConflictException, ForbiddenException {
+        // If not signed in, throw a 401 error.
+        if (null == user) {
+            throw new UnauthorizedException("Authorization required.");
+        }
+        final String userId = getUserId(user);
+        TxResult<Boolean> result = ofy().transact(new Work<TxResult<Boolean>>() {
+            @Override
+            public TxResult<Boolean> run() {
+                Key<Story> storyKey = Key.create(Story.class, storyId);
+                Story story = ofy().load().key(storyKey).now();
+                // 404 when there is no Story with the given storyId.
+                if (story == null) {
+                    return new TxResult<>(new NotFoundException(
+                            "No Story found with key: " + storyId));
+                }
+                // Un-bookmarking the story.
+                Profile profile = getProfileFromUser(user, userId);
+                String storyKeyString = KeyFactory.keyToString(storyKey.getRaw());
+                if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
+                    profile.removeBookmarkedStory(storyKeyString);
+                    ofy().save().entities(profile).now();
+                    return new TxResult<>(true);
+                } else {
+                    return new TxResult<>(false);
+                }
+            }
+        });
+        // NotFoundException is actually thrown here.
+        return new WrappedBoolean(result.getResult());
     }
 
     /**
