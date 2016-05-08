@@ -3,7 +3,10 @@
     <application>hackernewsreader-1304</application>
     <version>1</version>
     <threadsafe>true</threadsafe>
-
+    <!-- To use Firebase with App Engine, you must use manual scaling -->
+    <manual-scaling>
+        <instances>1</instances>
+    </manual-scaling>
     <system-properties>
         <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
     </system-properties>

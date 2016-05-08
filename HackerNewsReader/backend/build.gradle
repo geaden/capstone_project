@@ -13,6 +13,9 @@ buildscript {
 repositories {
     jcenter();
     mavenCentral();
+    maven {
+        url 'http://boilerpipe.googlecode.com/svn/repo/'
+    }
 }
 
 apply plugin: 'java'
@@ -30,12 +33,12 @@ dependencies {
     compile "com.google.appengine:appengine-endpoints-deps:$rootProject.ext.googleAppEngineVersion"
 
     // Firebase client to access HN New API.
-    compile 'com.firebase:firebase-client-jvm:2.5.0'
-    
-    compile 'org.apache.httpcomponents:httpclient:4.5.1'
+    compile 'com.firebase:firebase-client-jvm:2.5.2'
 
-    // Goose library to extract content.
-    compile 'com.gravity:goose:2.1.22'
+    // Boilerpipe dependencies for extracting articles content.
+    compile 'de.l3s.boilerpipe:boilerpipe:1.2.0'
+    compile 'xerces:xercesImpl:2.9.1'
+    compile 'net.sourceforge.nekohtml:nekohtml:1.9.13'
 
     compile 'javax.servlet:servlet-api:2.5'
 

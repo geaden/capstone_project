@@ -18,9 +18,7 @@ public final class Constants {
 
     public static final String HACKER_NEWS_API_ITEM = buildApiUrl("item");
 
-    public static final int NUMBER_OF_STORIES = 1;
-
-    public static final String HACKER_NEWS_READER_BUCKET = "gs://hacker-news-reader/";
+    public static final int NUMBER_OF_STORIES = 3;
 
     /**
      * Helper method to build HN News API to access different data.

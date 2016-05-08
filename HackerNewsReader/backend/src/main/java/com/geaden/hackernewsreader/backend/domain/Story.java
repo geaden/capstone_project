@@ -2,6 +2,7 @@ package com.geaden.hackernewsreader.backend.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -15,6 +16,7 @@ import java.util.List;
  * @author Gennady Denisov
  */
 @Entity
+@Cache
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Story {
     /**

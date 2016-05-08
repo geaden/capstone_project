@@ -3,7 +3,7 @@ package com.geaden.hackernewsreader.backend.firebase;
 import com.firebase.client.Firebase;
 
 /**
- * {}.
+ * Factory to construct {@link Firebase} client.
  *
  * @author Gennady Denisov
  */

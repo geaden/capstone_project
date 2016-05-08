@@ -4,9 +4,11 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
+import com.geaden.hackernewsreader.backend.boilerpipe.BoilerPipeServiceFactory;
+import com.geaden.hackernewsreader.backend.boilerpipe.BoilerpipeContentExtractionService;
+import com.geaden.hackernewsreader.backend.domain.Content;
 import com.geaden.hackernewsreader.backend.domain.Story;
 import com.geaden.hackernewsreader.backend.firebase.FirebaseFactory;
-import com.geaden.hackernewsreader.backend.goose.GooseFactory;
 import com.google.appengine.repackaged.com.google.common.collect.Lists;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalMemcacheServiceTestConfig;
@@ -16,9 +18,6 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.cache.AsyncCacheFilter;
 import com.googlecode.objectify.util.Closeable;
-import com.gravity.goose.Article;
-import com.gravity.goose.Goose;
-import com.gravity.goose.images.Image;
 
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +51,7 @@ import static org.mockito.Mockito.when;
  * @author Gennady Denisov
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FirebaseFactory.class, GooseFactory.class})
+@PrepareForTest({FirebaseFactory.class, BoilerPipeServiceFactory.class})
 public class UploadTopstoriesServletTest {
 
     private final LocalServiceTestHelper helper =
@@ -73,22 +72,19 @@ public class UploadTopstoriesServletTest {
     Firebase firebase;
 
     @Mock
-    Goose goose;
+    BoilerpipeContentExtractionService boilerpipeContentExtractionService;
 
     @Mock
-    private DataSnapshot snapshot;
+    Content content;
 
     @Mock
-    private Article article;
+    DataSnapshot snapshot;
 
     @Mock
-    private Query query;
+    Query query;
 
     @Mock
-    private Image image;
-
-    @Mock
-    private PrintWriter writer;
+    PrintWriter writer;
 
     @Captor
     private ArgumentCaptor<ValueEventListener> eventListenerArgumentCaptor;
@@ -101,11 +97,10 @@ public class UploadTopstoriesServletTest {
         helper.setUp();
         session = ObjectifyService.begin();
         MockitoAnnotations.initMocks(this);
-        PowerMockito.mockStatic(FirebaseFactory.class, GooseFactory.class);
+        PowerMockito.mockStatic(FirebaseFactory.class, BoilerPipeServiceFactory.class);
         PowerMockito.when(FirebaseFactory.create(anyString())).thenReturn(firebase);
-        PowerMockito.when(GooseFactory.create()).thenReturn(goose);
-        when(goose.extractContent(anyString())).thenReturn(article);
-        when(article.topImage()).thenReturn(image);
+        PowerMockito.when(BoilerPipeServiceFactory.create()).thenReturn(boilerpipeContentExtractionService);
+        when(boilerpipeContentExtractionService.content(anyString())).thenReturn(content);
         when(firebase.limitToFirst(anyInt())).thenReturn(query);
         // Mock child
         when(firebase.child(anyString())).thenReturn(firebase);
