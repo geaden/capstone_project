@@ -1,9 +1,11 @@
 package com.geaden.hackernewsreader.backend.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.geaden.hackernewsreader.backend.util.CustomTimestampDeserializer;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.ApiResourceProperty;
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -27,9 +29,11 @@ public class Story {
     @Id
     private long id;
 
-    private String by;
+    @JsonProperty("by")
+    private String author;
 
     @Index
+    @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Date time;
 
     private String title;
@@ -41,11 +45,6 @@ public class Story {
     private String imageUrl;
 
     private long score;
-
-    /**
-     * List of keys of story comments.
-     */
-    private List<Key<Comment>> comments;
 
     /**
      * List of kids, returned from HN API.
@@ -69,8 +68,8 @@ public class Story {
         return id;
     }
 
-    public String getBy() {
-        return by;
+    public String getAuthor() {
+        return author;
     }
 
     public Date getTime() {
@@ -113,8 +112,8 @@ public class Story {
         this.title = title;
     }
 
-    public void setBy(String by) {
-        this.by = by;
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public void setTime(Date time) {
@@ -145,7 +144,7 @@ public class Story {
     public String toString() {
         StringBuilder sb = new StringBuilder("Story{");
         sb.append("id=").append(id);
-        sb.append(", by='").append(by).append('\'');
+        sb.append(", author='").append(author).append('\'');
         sb.append(", time=").append(time);
         sb.append(", title='").append(title).append('\'');
         sb.append(", type='").append(type).append('\'');

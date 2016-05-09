@@ -132,7 +132,7 @@ public class HackernewsApiTest {
             Key<Story> key = ofy().factory().allocateId(Story.class);
             Story story = new Story(key.getId());
             story.setTitle(title);
-            story.setBy("foo");
+            story.setAuthor("foo");
             story.setType("story");
             story.setScore(100500L);
             story.setUrl("http://foo.bar");

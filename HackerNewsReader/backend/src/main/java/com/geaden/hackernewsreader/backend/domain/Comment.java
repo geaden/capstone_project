@@ -2,6 +2,8 @@ package com.geaden.hackernewsreader.backend.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.geaden.hackernewsreader.backend.util.CustomTimestampDeserializer;
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.ApiResourceProperty;
 import com.googlecode.objectify.Key;
@@ -40,6 +42,7 @@ public class Comment {
     @JsonProperty("by")
     private String author;
 
+    @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Date time;
 
     @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)

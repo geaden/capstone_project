@@ -122,7 +122,7 @@ public class UploadTopstoriesServletTest {
         Key<Story> key = ofy().factory().allocateId(Story.class);
         Story story = new Story(key.getId());
         story.setTitle("foo");
-        story.setBy("foo");
+        story.setAuthor("foo");
         story.setScore(100500L);
         story.setUrl("http://foo.bar");
         story.setTime(new Date(System.currentTimeMillis() + new Random().nextLong()));
