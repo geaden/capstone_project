@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/bookmarks_navigation_menu_item"
+        app:actionLayout="@layout/action_view_switch"
+        android:title="@string/bookmarks_only"/>
+
+    <item
+        android:id="@+id/settings_navigation_menu_item"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/settings_title" />
+
+</menu>

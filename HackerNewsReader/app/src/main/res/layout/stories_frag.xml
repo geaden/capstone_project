@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".stories.StoriesActivity">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/stories_grid"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/item_story"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <!-- Empty text view -->
+    <LinearLayout
+        android:id="@+id/noStories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/noStoriesIcon"
+            android:layout_width="@dimen/no_stories_icon_size"
+            android:layout_height="@dimen/no_stories_icon_size"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_no_stories_24dp" />
+
+        <TextView
+            android:id="@+id/noStoriesMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/list_item_padding"
+            android:text="@string/no_stories_all" />
+
+    </LinearLayout>
+</RelativeLayout>

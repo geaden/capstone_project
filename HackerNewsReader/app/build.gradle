@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -17,10 +18,31 @@ android {
         debug {
             // Run code coverage reports by default on debug builds.
             testCoverageEnabled = true
+            minifyEnabled false
         }
         release {
-            minifyEnabled false
+            minifyEnabled true
+            // Uses new built-in shrinker http://tools.android.com/tech-docs/new-build-system/built-in-shrinker+
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // If you need to add more flavors, consider using flavor dimensions.
+    productFlavors {
+        mock {
+            applicationIdSuffix = ".mock"
+        }
+        prod {
+
+        }
+    }
+
+    // Remove mockRelease as it's not needed.
+    android.variantFilter { variant ->
+        if (variant.buildType.name.equals('release')
+                && variant.getFlavors().get(0).name.equals('mock')) {
+            variant.setIgnore(true);
         }
     }
 
@@ -45,8 +67,20 @@ dependencies {
     compile "com.android.support:design:$rootProject.supportLibraryVersion"
     compile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
+    compile "com.jakewharton:butterknife:$rootProject.ext.butterknifeVersion"
+    compile "com.github.bumptech.glide:glide:$rootProject.glideVersion"
     compile "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
     compile "com.google.guava:guava:$rootProject.guavaVersion"
+
+    // Dagger dependencies
+    apt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+    compile "com.google.dagger:dagger:$rootProject.daggerVersion"
+
+    // Endpoints integration
+    compile(project(path: ':backend', configuration: 'android-endpoints')) {
+        exclude(group: 'com.google.guava', module: 'guava-jdk5')
+    }
 
     // Dependencies for local unit tests
     testCompile "junit:junit:$rootProject.ext.junitVersion"
@@ -72,7 +106,7 @@ dependencies {
     androidTestCompile "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
-    compile project(path: ':backend', configuration: 'android-endpoints')
+
 }
 
 /*
@@ -82,6 +116,7 @@ dependencies. This is required since Espresso internally has a dependency on sup
 configurations.all {
     resolutionStrategy.force "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
     resolutionStrategy.force "com.google.code.findbugs:jsr305:+"
+    resolutionStrategy.force "com.google.guava:guava:$rootProject.guavaVersion"
 }
 
 /*
@@ -90,9 +125,11 @@ excluded from the test APK! This is necessary because both APKs will contain the
 excluding these dependencies from your test configuration will result in an dex pre-verifier error
 at runtime. More info in this tools bug: (https://code.google.com/p/android/issues/detail?id=192497)
 */
-configurations.compile.dependencies.each { compileDependency ->
-    println "Excluding compile dependency: ${compileDependency.getName()}"
-    configurations.androidTestCompile.dependencies.each { androidTestCompileDependency ->
-        configurations.androidTestCompile.exclude module: "${compileDependency.getName()}"
+[configurations.compile, configurations.provided, configurations.apt].each { configuration ->
+    configuration.dependencies.each { dependency ->
+        println "Excluding ${configuration.name} dependency: ${dependency.getName()}"
+        configurations.androidTestCompile.dependencies.each { androidTestCompileDependency ->
+            configurations.androidTestCompile.exclude module: "${dependency.getName()}"
+        }
     }
 }

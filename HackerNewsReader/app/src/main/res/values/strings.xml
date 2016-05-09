@@ -1,3 +1,18 @@
 <resources>
-    <string name="app_name">HackerNewsReader</string>
+    <string name="app_name">HN Reader</string>
+
+    <!-- Navigation view -->
+    <string name="navigation_view_header_title">Hacker New Reader</string>
+    <string name="settings_title">Settings</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+    <string name="bookmarks_only">Bookmarks only</string>
+
+    <string name="no_stories_all">No stories :(</string>
+
+    <string name="transition_story">transition_story</string>
+
+    <string name="loading_stories_error">Error occured while loading stories</string>
+
+    <string name="top_stories_toolbar_title">Top stories</string>
 </resources>
