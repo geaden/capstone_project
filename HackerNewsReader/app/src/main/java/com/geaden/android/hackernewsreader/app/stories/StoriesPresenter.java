@@ -138,9 +138,9 @@ public class StoriesPresenter implements StoriesContract.Presenter,
     }
 
     @Override
-    public void openStoryDetails(@NonNull Story requestedStory) {
+    public void openStoryDetails(@NonNull Story requestedStory, @NonNull android.view.View storyImage) {
         checkNotNull(requestedStory, "requestedStory cannot be null!");
-        mStoriesView.showStoryDetailsUi(Long.toString(requestedStory.getId()));
+        mStoriesView.showStoryDetailsUi(Long.toString(requestedStory.getId()), storyImage);
     }
 
     /**

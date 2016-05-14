@@ -34,9 +34,10 @@ public class StoriesContract {
         /**
          * Shows story details by provided id of the story.
          *
-         * @param storyId the id of {@link Story}
+         * @param storyId    the id of {@link Story}
+         * @param storyImage the image of story to get transition name for.
          */
-        void showStoryDetailsUi(String storyId);
+        void showStoryDetailsUi(String storyId, android.view.View storyImage);
 
         /**
          * Shows error if occurred during loading of stories.
@@ -68,8 +69,9 @@ public class StoriesContract {
          * Opens story details.
          *
          * @param requestedStory the requested {@link Story}
+         * @param storyImage     the image view to get transition name for.
          */
-        void openStoryDetails(@NonNull Story requestedStory);
+        void openStoryDetails(@NonNull Story requestedStory, @NonNull android.view.View storyImage);
 
         /**
          * Sets filtering.

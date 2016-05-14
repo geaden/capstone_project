@@ -17,6 +17,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".storydetail.StoryDetailActivity"
+            android:parentActivityName=".stories.StoriesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".stories.StoriesActivity" />
+        </activity>
+
     </application>
 
 </manifest>

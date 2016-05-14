@@ -21,6 +21,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.geaden.android.hackernewsreader.app.R;
+import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
     StoryItemListener mItemListener = new StoryItemListener() {
         @Override
         public void onStoryClicked(Story clickedStory, View storyImage) {
-            mPresenter.openStoryDetails(clickedStory);
+            mPresenter.openStoryDetails(clickedStory, storyImage);
         }
     };
 
@@ -133,10 +134,10 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
     }
 
     @Override
-    public void showStoryDetailsUi(String storyId) {
+    public void showStoryDetailsUi(String storyId, View storyImage) {
         // in it's own Activity, since it makes more sense that way and it gives us the flexibility
         // to show some Intent stubbing.
-        // TODO: launch details activity here...
+        StoryDetailActivity.launch(getActivity(), storyId, storyImage);
     }
 
     @Override

@@ -14,4 +14,10 @@
     </style>
 
     <style name="Toolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="StoryInfoText">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingTop">@dimen/story_info_text_padding</item>
+        <item name="android:paddingBottom">@dimen/story_info_text_padding</item>
+    </style>
 </resources>

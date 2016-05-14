@@ -7,4 +7,5 @@
 
     <color name="main_placeholder">#c0c0c0</color>
     <color name="overlay_bg_color">#CC000000</color>
+    <color name="story_detail_title_background">#33C0C0C0</color>
 </resources>

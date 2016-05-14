@@ -2,6 +2,7 @@ package com.geaden.android.hackernewsreader.app.stories;
 
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.view.View;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
@@ -19,7 +20,6 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -49,6 +49,9 @@ public class StoriesPresenterTest {
 
     @Mock
     private LoaderManager mLoaderManager;
+
+    @Mock
+    private View mStoryImageView;
 
     @Mock
     private Loader mLoader;
@@ -96,10 +99,10 @@ public class StoriesPresenterTest {
         requestedStory.setContent("For this story");
 
         // When open story details is requested
-        mStoriesPresenter.openStoryDetails(requestedStory);
+        mStoriesPresenter.openStoryDetails(requestedStory, mStoryImageView);
 
         // Then story detail UI is shown
-        verify(mStoriesView).showStoryDetailsUi(any(String.class));
+        verify(mStoriesView).showStoryDetailsUi("1", mStoryImageView);
     }
 
     @Test
