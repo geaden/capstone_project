@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
+import com.google.api.client.util.Lists;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.List;
 
@@ -33,30 +35,49 @@ public class StoriesLocalDataSource implements StoriesDataSource {
     @Nullable
     @Override
     public List<Story> getStories() {
-        // TODO: Implement this...
-        return null;
+        List<StoryModel> storyModels = SQLite.select()
+                .from(StoryModel.class)
+                .queryList();
+
+        List<Story> stories = Lists.newArrayList();
+
+        for (StoryModel storyModel : storyModels) {
+            stories.add(storyModel.getStory());
+        }
+        return stories;
     }
 
     @Nullable
     @Override
     public Story getStory(@NonNull String storyId) {
-        // TODO: Implement this...
+        StoryModel storyModel = SQLite.select().from(StoryModel.class)
+                .where(StoryModel_Table.id.eq(Long.valueOf(storyId))).querySingle();
+        if (storyModel != null) {
+            return storyModel.getStory();
+        }
         return null;
     }
 
     @Override
     public void saveStory(@NonNull Story story) {
-        // TODO: Implement this...
+        StoryModel storyModel = StoryModel.from(story);
+        storyModel.save();
     }
 
     @Override
     public void bookmarkStory(@NonNull String storyId) {
-        // TODO: Implement this...
+        BookmarkModel bookmarkModel = new BookmarkModel();
+        bookmarkModel.story = Long.valueOf(storyId);
+        bookmarkModel.insert();
     }
 
     @Override
     public void unbookmarkStory(@NonNull String storyId) {
-        // TODO: Implement this...
+        BookmarkModel bookmarkModel = SQLite.select().from(BookmarkModel.class)
+                .where(BookmarkModel_Table.story_id.eq(Long.valueOf(storyId))).querySingle();
+        if (null != bookmarkModel) {
+            bookmarkModel.delete();
+        }
     }
 
     @Override
@@ -67,6 +88,6 @@ public class StoriesLocalDataSource implements StoriesDataSource {
 
     @Override
     public void deleteAllStories() {
-        // TODO: Implement this...
+        SQLite.delete().from(StoryModel.class).query();
     }
 }

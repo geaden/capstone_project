@@ -5,6 +5,8 @@ import android.app.Application;
 import com.geaden.android.hackernewsreader.app.data.DaggerStoriesRepositoryComponent;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepositoryComponent;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepositoryModule;
+import com.raizlabs.android.dbflow.config.FlowConfig;
+import com.raizlabs.android.dbflow.config.FlowManager;
 
 /**
  * Custom application to initialize Dagger components.
@@ -18,6 +20,8 @@ public class StoriesApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        FlowManager.init(new FlowConfig.Builder(this).build());
 
         mRepositoryComponent = DaggerStoriesRepositoryComponent.builder()
                 .storiesRepositoryModule(new StoriesRepositoryModule())

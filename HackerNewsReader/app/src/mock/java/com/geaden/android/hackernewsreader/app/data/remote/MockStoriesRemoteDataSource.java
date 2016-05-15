@@ -5,8 +5,10 @@ import android.support.annotation.Nullable;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
+import com.google.api.client.util.DateTime;
 import com.google.common.collect.Lists;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
         story.setTitle(storyTitle);
         story.setAuthor("foo");
         story.setScore(42L);
+        story.setTime(new DateTime(new Date()));
         story.setContent("lorem ipsum");
         STORIES_SERVICE_DATA.put(Long.toString(storyId), story);
     }

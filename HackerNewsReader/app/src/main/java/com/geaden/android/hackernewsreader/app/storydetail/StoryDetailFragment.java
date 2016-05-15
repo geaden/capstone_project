@@ -180,7 +180,9 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
 
     @Override
     public void showStoryTime(Date date) {
-        CharSequence ago = DateUtils.getRelativeTimeSpanString(getActivity(), date.getTime());
+        long now = new Date().getTime();
+        CharSequence ago = DateUtils.getRelativeTimeSpanString(date.getTime(), now, 0L,
+                DateUtils.FORMAT_ABBREV_ALL);
         mStoryTime.setText(ago);
     }
 

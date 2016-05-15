@@ -77,6 +77,11 @@ dependencies {
     provided 'org.glassfish:javax.annotation:10.0-b28'
     compile "com.google.dagger:dagger:$rootProject.daggerVersion"
 
+    // DBFlow dependencies
+    apt "com.github.Raizlabs.DBFlow:dbflow-processor:$rootProject.dbflowVersion"
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:$rootProject.dbflowVersion"
+    compile "com.github.Raizlabs.DBFlow:dbflow:$rootProject.dbflowVersion"
+
     // Endpoints integration
     compile(project(path: ':backend', configuration: 'android-endpoints')) {
         exclude(group: 'com.google.guava', module: 'guava-jdk5')

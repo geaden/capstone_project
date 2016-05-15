@@ -16,6 +16,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven { url "https://jitpack.io" }
     }
 }
 
@@ -40,6 +41,7 @@ ext {
     // App dependencies
     supportLibraryVersion = '23.3.0'
     daggerVersion = '2.0'
+    dbflowVersion = '3.0.0-beta6'
     butterknifeVersion = '7.0.1'
     guavaVersion = '19.0'
     glideVersion = '3.6.1'
