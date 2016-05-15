@@ -18,7 +18,7 @@ public final class Constants {
 
     public static final String HACKER_NEWS_API_ITEM = buildApiUrl("item");
 
-    public static final int NUMBER_OF_STORIES = 1;
+    public static final int NUMBER_OF_STORIES = 10;
 
     // Minium width of the content image...
     public static final int IMAGE_MIN_WIDTH = 200;
