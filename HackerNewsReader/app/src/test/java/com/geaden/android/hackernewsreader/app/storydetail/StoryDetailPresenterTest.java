@@ -78,7 +78,7 @@ public class StoryDetailPresenterTest {
 
         mStoryDetailPresenter.openStoryComments();
 
-        verify(mStoryView).showStoryCommentsUi(Long.toString(mStory.getId()));
+        verify(mStoryView).showStoryCommentsUi(Long.toString(mStory.getId()), mStory.getTitle());
     }
 
     @Test

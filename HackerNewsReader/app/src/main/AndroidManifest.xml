@@ -25,6 +25,14 @@
                 android:value=".stories.StoriesActivity" />
         </activity>
 
+        <activity
+            android:name=".comments.CommentsActivity"
+            android:parentActivityName=".storydetail.StoryDetailActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".storydetail.StoryDetailActivity" />
+        </activity>
+
     </application>
 
 </manifest>

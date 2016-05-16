@@ -20,4 +20,6 @@
     <string name="menu_story_comments">Comments</string>
     <string name="story_by">By <xliff:g name="by_author" example="me">%1$s</xliff:g></string>
     <string name="no_data">No data available...</string>
+    <string name="comments_toolbar_title">Comments</string>
+    <string name="no_comments">No comments</string>
 </resources>

@@ -3,6 +3,7 @@ package com.geaden.android.hackernewsreader.app.data;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 
 import java.util.List;
@@ -14,29 +15,16 @@ import java.util.List;
  */
 public interface StoriesDataSource {
 
-    /**
-     * Callback to handle story loaded events.
-     */
-    interface GetStoryCallback {
-
-        /**
-         * Called when story is loaded and ready to be shown.
-         *
-         * @param story loaded story.
-         */
-        void onStoryLoaded(Story story);
-
-        /**
-         * Called when no story is available.
-         */
-        void onDataNotAvailable();
-    }
-
     @Nullable
     List<Story> getStories();
 
     @Nullable
     Story getStory(@NonNull String storyId);
+
+    @Nullable
+    List<Comment> getComments(@NonNull String storyId);
+
+    void saveComment(@NonNull String storyId, @NonNull Comment comment);
 
     void saveStory(@NonNull Story story);
 

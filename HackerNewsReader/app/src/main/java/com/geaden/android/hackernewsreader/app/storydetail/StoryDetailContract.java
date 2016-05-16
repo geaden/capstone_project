@@ -31,9 +31,10 @@ public class StoryDetailContract {
         /**
          * Loads story comments UI.
          *
-         * @param storyId the id of story to load comments for.
+         * @param storyId    the id of story to load comments for.
+         * @param storyTitle title of the story.
          */
-        void showStoryCommentsUi(String storyId);
+        void showStoryCommentsUi(String storyId, String storyTitle);
 
         /**
          * Show story main image if applicabale.

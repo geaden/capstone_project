@@ -10,17 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
+        <ListView
             android:id="@+id/comments_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:listitem="@layout/item_story"/>
+            tools:listitem="@layout/item_comment" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <!-- Empty text view -->
     <LinearLayout
-        android:id="@+id/noStories"
+        android:id="@+id/noComments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -34,12 +34,12 @@
             android:src="@drawable/ic_no_data_24dp" />
 
         <TextView
-            android:id="@+id/noStoriesMain"
+            android:id="@+id/noCommentsMain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginBottom="@dimen/list_item_padding"
-            android:text="@string/no_stories_all" />
+            android:text="@string/no_comments" />
 
     </LinearLayout>
 </RelativeLayout>

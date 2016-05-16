@@ -1,19 +1,22 @@
-package com.geaden.android.hackernewsreader.app.stories;
+package com.geaden.android.hackernewsreader.app.comments;
 
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
-import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
+import com.geaden.android.hackernewsreader.app.data.local.CommentModel;
+import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -33,25 +36,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.hamcrest.Matchers.allOf;
 
 /**
- * Tests for the stories screen, the main screen which contains a list of all top stories.
+ * Test for comments list screen.
  *
  * @author Gennady Denisov
  */
-@RunWith(AndroidJUnit4.class)
 @LargeTest
-public class StoriesScreenTest {
-
-    private final static String TITLE1 = "foo";
-
-    private final static String TITLE2 = "bar";
+@RunWith(AndroidJUnit4.class)
+public class CommentsScreentTest {
 
     /**
-     * A custom {@link Matcher} which matches an item in a {@link RecyclerView} by its text.
+     * A custom {@link Matcher} which matches an item in a {@link ListView} by its text.
      * <p/>
      * <p/>
      * View constraints:
      * <ul>
-     * <li>View must be a child of a {@link RecyclerView}
+     * <li>View must be a child of a {@link ListView}
      * <ul>
      *
      * @param itemText the text to match
@@ -63,7 +62,7 @@ public class StoriesScreenTest {
             @Override
             public boolean matchesSafely(View item) {
                 return allOf(
-                        isDescendantOfA(isAssignableFrom(RecyclerView.class)),
+                        isDescendantOfA(isAssignableFrom(ListView.class)),
                         withText(itemText)).matches(item);
             }
 
@@ -92,8 +91,8 @@ public class StoriesScreenTest {
      * blocks of Junit tests.
      */
     @Rule
-    public ActivityTestRule<StoriesActivity> mStoriesActivityTestRule =
-            new ActivityTestRule<StoriesActivity>(StoriesActivity.class) {
+    public ActivityTestRule<CommentsActivity> mCommentsActivityTestRule =
+            new ActivityTestRule<CommentsActivity>(CommentsActivity.class, true, false) {
 
                 /**
                  * To avoid a long list of stories and the need to scroll through the list to find a
@@ -106,38 +105,33 @@ public class StoriesScreenTest {
                     ((StoriesApplication) InstrumentationRegistry.getTargetContext()
                             .getApplicationContext()).getStoriesRepositoryComponent()
                             .getStoriesRepository().deleteAllStories();
+                    SQLite.delete().from(CommentModel.class).query();
                 }
             };
 
+    /**
+     * Setup your test fixture with a mock story id. The {@link StoryDetailActivity} is started with
+     * a particular story id, which is then loaded from the service API.
+     */
+    private void startActivityWithWithStubbedStory() {
+        // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
+        Intent startIntent = new Intent();
+        startIntent.putExtra(CommentsActivity.EXTRA_STORY_ID, "1");
+        startIntent.putExtra(CommentsActivity.EXTRA_STORY_TITLE, "foo");
+        mCommentsActivityTestRule.launchActivity(startIntent);
+    }
+
     @Test
-    public void showAllStories() {
+    public void showAllComments() {
+
+        startActivityWithWithStubbedStory();
+
         // Check title
-        CharSequence title = InstrumentationRegistry.getTargetContext()
-                .getString(R.string.top_stories_toolbar_title);
+        CharSequence title = "foo";
         matchToolbarTitle(title);
 
-        // Add 2 stories
-        createStory(TITLE1);
-        createStory(TITLE2);
-
-        // Verify that all stories are shown
-        viewAllStories();
-        onView(withItemText(TITLE1)).check(matches(isDisplayed()));
-        onView(withItemText(TITLE2)).check(matches(isDisplayed()));
+        onView(withItemText("lorem ipsum 1")).check(matches(isDisplayed()));
+        onView(withItemText("lorem ipsum 2")).check(matches(isDisplayed()));
+        onView(withItemText("lorem ipsum 3")).check(matches(isDisplayed()));
     }
-
-    private void viewAllStories() {
-        // TODO: Display all stories...
-    }
-
-    /**
-     * Helper method that creates two stories with provided title.
-     *
-     * @param title the title of the story.
-     */
-    private void createStory(String title) {
-        // TODO: Add stories here...
-
-    }
-
 }

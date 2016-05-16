@@ -11,7 +11,6 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +24,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.geaden.android.hackernewsreader.app.R;
+import com.geaden.android.hackernewsreader.app.comments.CommentsActivity;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 
 import java.util.Date;
 
@@ -145,9 +146,11 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     }
 
     @Override
-    public void showStoryCommentsUi(String storyId) {
-        // TODO: implement this
-
+    public void showStoryCommentsUi(String storyId, String storyTitle) {
+        Intent intent = new Intent(getActivity(), CommentsActivity.class);
+        intent.putExtra(CommentsActivity.EXTRA_STORY_ID, storyId);
+        intent.putExtra(CommentsActivity.EXTRA_STORY_TITLE, storyTitle);
+        getActivity().startActivity(intent);
     }
 
     @Override
@@ -181,8 +184,7 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     @Override
     public void showStoryTime(Date date) {
         long now = new Date().getTime();
-        CharSequence ago = DateUtils.getRelativeTimeSpanString(date.getTime(), now, 0L,
-                DateUtils.FORMAT_ABBREV_ALL);
+        CharSequence ago = Utils.getRelativeTime(now, date.getTime());
         mStoryTime.setText(ago);
     }
 

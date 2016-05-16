@@ -7,6 +7,7 @@ import android.util.Log;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.android.hackernewsreader.app.util.Config;
 import com.geaden.hackernewsreader.backend.hackernews.Hackernews;
+import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
@@ -67,9 +68,25 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
         return null;
     }
 
+    @Nullable
+    @Override
+    public List<Comment> getComments(@NonNull String storyId) {
+        try {
+            return sApi.getComments(Long.valueOf(storyId)).execute().getItems();
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to get comments for story", e);
+        }
+        return null;
+    }
+
+    @Override
+    public void saveComment(@NonNull String storyId, @NonNull Comment comment) {
+        throw new UnsupportedOperationException("Remote save is not supported for a comment!");
+    }
+
     @Override
     public void saveStory(@NonNull Story story) {
-        throw new UnsupportedOperationException("Remote save is not supported!");
+        throw new UnsupportedOperationException("Remote save is not supported for a story!");
 
     }
 

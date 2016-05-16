@@ -2,7 +2,11 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="no_stories_icon_size">48dp</dimen>
+
+
+    <dimen name="no_data_icon_size">48dp</dimen>
+
+    <!-- Story grid -->
     <dimen name="list_item_padding">48dp</dimen>
     <dimen name="item_margin">4dp</dimen>
     <dimen name="story_card_default_radius">2dp</dimen>
@@ -11,12 +15,20 @@
     <dimen name="story_card_actions_padding_vertical">16dp</dimen>
     <dimen name="story_card_actions_padding_horizontal">8dp</dimen>
     <dimen name="story_ic_padding">4dp</dimen>
+
     <dimen name="app_bar_elevation">4dp</dimen>
+
     <dimen name="story_detail_image_height">320dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Story details -->
     <dimen name="story_info_text_padding">8dp</dimen>
     <dimen name="story_detail_content_padding">16dp</dimen>
     <dimen name="story_detail_title_padding">16dp</dimen>
     <dimen name="story_detail_margin">48dp</dimen>
     <dimen name="bookmark_icon_margin">4dp</dimen>
+
+    <!-- Comments -->
+    <dimen name="item_comment_padding">16dp</dimen>
+    <dimen name="item_comment_content_padding">4dp</dimen>
 </resources>

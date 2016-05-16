@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
+import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.Lists;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -56,6 +57,28 @@ public class StoriesLocalDataSource implements StoriesDataSource {
             return storyModel.getStory();
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    public List<Comment> getComments(@NonNull String storyId) {
+        List<CommentModel> commentModels = SQLite.select().from(CommentModel.class)
+                .where(CommentModel_Table.story_id.eq(Long.valueOf(storyId)))
+                .queryList();
+
+        List<Comment> comments = Lists.newArrayList();
+
+        for (CommentModel commentModel : commentModels) {
+            comments.add(commentModel.toModel());
+        }
+
+        return comments;
+    }
+
+    @Override
+    public void saveComment(@NonNull String storyId, @NonNull Comment comment) {
+        CommentModel commentModel = CommentModel.from(storyId, comment);
+        commentModel.save();
     }
 
     @Override

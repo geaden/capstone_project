@@ -91,4 +91,10 @@ public class StoryDetailActivity extends AppCompatActivity {
                 new StoryLoader(getApplicationContext(), storyId, storiesRepository),
                 getSupportLoaderManager());
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
 }

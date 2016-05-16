@@ -37,8 +37,12 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
 
     @Nullable
     private String mStoryId;
+
     @Nullable
     private String mStoryUrl;
+
+    @Nullable
+    private String mStoryTitle;
 
     public StoryDetailPresenter(@Nullable String storyId,
                                 @NonNull StoriesRepository storiesRepository,
@@ -127,6 +131,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
     public void onLoadFinished(Loader<Story> loader, Story story) {
         if (story != null) {
             mStoryUrl = story.getUrl();
+            mStoryTitle = story.getTitle();
             showStory(story);
         } else {
             mStoryDetailView.showMissingStory();
@@ -140,7 +145,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
 
     @Override
     public void openStoryComments() {
-        mStoryDetailView.showStoryCommentsUi(mStoryId);
+        mStoryDetailView.showStoryCommentsUi(mStoryId, mStoryTitle);
     }
 
     @Override

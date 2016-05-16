@@ -46,7 +46,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
     @Bind(R.id.refresh_layout)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
-    @Bind(R.id.stories_grid)
+    @Bind(R.id.comments_list)
     RecyclerView mRecyclerView;
 
     @Bind(R.id.noStories)

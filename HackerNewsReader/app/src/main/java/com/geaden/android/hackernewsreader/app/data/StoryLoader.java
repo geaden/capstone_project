@@ -8,7 +8,7 @@ import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 /**
  * Custom {@link android.content.Loader} for a {@link Story}, using the
  * {@link StoriesRepository} as its source. This Loader is a {@link AsyncTaskLoader} so it queries
- * the data asynchronously. .
+ * the data asynchronously.
  *
  * @author Gennady Denisov
  */

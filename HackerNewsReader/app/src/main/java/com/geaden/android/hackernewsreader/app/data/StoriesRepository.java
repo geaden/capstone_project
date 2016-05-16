@@ -3,6 +3,7 @@ package com.geaden.android.hackernewsreader.app.data;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 
 import java.util.ArrayList;
@@ -118,6 +119,33 @@ public class StoriesRepository implements StoriesDataSource {
         processLoadedStories(stories);
 
         return getCachedStories();
+    }
+
+    @Nullable
+    @Override
+    public List<Comment> getComments(@NonNull String storyId) {
+        List<Comment> comments = mStoriesLocalDataSource.getComments(storyId);
+
+        if (comments == null || comments.isEmpty()) {
+            comments = mStoriesRemoteDataSource.getComments(storyId);
+            saveCommentInLocalDataSource(storyId, comments);
+        }
+
+        return comments;
+    }
+
+    private void saveCommentInLocalDataSource(String storyId, List<Comment> comments) {
+        if (comments != null) {
+            for (Comment comment : comments) {
+                mStoriesLocalDataSource.saveComment(storyId, comment);
+            }
+        }
+
+    }
+
+    @Override
+    public void saveComment(@NonNull String storyId, @NonNull Comment comment) {
+        // no-op
     }
 
     public boolean cachedStoriesAvailable() {
