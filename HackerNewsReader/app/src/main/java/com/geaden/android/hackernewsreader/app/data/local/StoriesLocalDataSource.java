@@ -69,7 +69,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         List<Comment> comments = Lists.newArrayList();
 
         for (CommentModel commentModel : commentModels) {
-            comments.add(commentModel.toModel());
+            comments.add(commentModel.getComment());
         }
 
         return comments;
@@ -111,6 +111,8 @@ public class StoriesLocalDataSource implements StoriesDataSource {
 
     @Override
     public void deleteAllStories() {
+        SQLite.delete().from(CommentModel.class).query();
         SQLite.delete().from(StoryModel.class).query();
+        SQLite.delete().from(BookmarkModel.class).query();
     }
 }

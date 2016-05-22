@@ -1,5 +1,6 @@
 package com.geaden.hackernewsreader.backend.service;
 
+import com.geaden.hackernewsreader.backend.domain.Bookmark;
 import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Profile;
 import com.geaden.hackernewsreader.backend.domain.Story;
@@ -24,6 +25,7 @@ public class OfyService {
         factory().register(Story.class);
         factory().register(Comment.class);
         factory().register(Profile.class);
+        factory().register(Bookmark.class);
     }
 
     /**

@@ -22,4 +22,7 @@
     <string name="no_data">No data available...</string>
     <string name="comments_toolbar_title">Comments</string>
     <string name="no_comments">No comments</string>
+    <string name="share_story_intent_title">Share story</string>
+    <string name="pref_key_bookmarked_ony">key_bookmarked_only</string>
+    <string name="no_stories_bookmarked">No bookmarked stories :(</string>
 </resources>

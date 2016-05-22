@@ -43,6 +43,8 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
         story.setScore(42L);
         story.setTime(new DateTime(new Date()));
         story.setContent("lorem ipsum");
+        story.setUrl("http://example.com");
+        story.setNoComments(42);
         STORIES_SERVICE_DATA.put(Long.toString(storyId), story);
     }
 

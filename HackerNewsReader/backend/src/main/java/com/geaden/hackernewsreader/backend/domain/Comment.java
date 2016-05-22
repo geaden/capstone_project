@@ -43,11 +43,13 @@ public class Comment {
     private String author;
 
     @JsonDeserialize(using = CustomTimestampDeserializer.class)
+    @Index
     private Date time;
 
     @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
     private String type;
 
+    /** GAE & Objectify want this */
     public Comment() {
 
     }

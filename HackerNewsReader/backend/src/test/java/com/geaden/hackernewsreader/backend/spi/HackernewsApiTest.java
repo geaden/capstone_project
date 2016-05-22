@@ -117,6 +117,7 @@ public class HackernewsApiTest {
         assertFalse(wrappedBoolean.getResult());
         // Bookmark a story...
         hackernewsApi.bookmarkStory(user, 1L);
+        // And then un-bookmark it...
         wrappedBoolean = hackernewsApi.unbookmarkStory(user, 1L);
         assertTrue(wrappedBoolean.getResult());
         Collection<Story> bookmarks = hackernewsApi.getBookmarkedStories(user);
@@ -153,7 +154,7 @@ public class HackernewsApiTest {
      * @param story the story to create comments for.
      * @return comments.
      */
-    private static void dumpComments(Story story) {
+    private static void dumpComments(Story story) throws Exception {
         List<Comment> dummyComments = Lists.newArrayList();
         for (String text : new String[]{"foo", "bar", "baz"}) {
             Key<Comment> key = ofy().factory().allocateId(Comment.class);

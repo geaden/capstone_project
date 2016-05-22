@@ -7,6 +7,7 @@ import android.support.v4.content.Loader;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 
 import java.util.ArrayList;
@@ -81,6 +82,11 @@ public class StoriesPresenter implements StoriesContract.Presenter,
         if (mCurrentStories != null) {
             for (Story story : mCurrentStories) {
                 switch (mCurrentFiltering) {
+                    case BOOKMARKED_STORIES:
+                        if (Utils.checkIfBookmarked(story.getId())) {
+                            storiesToDisplay.add(story);
+                        }
+                        break;
                     default:
                         storiesToDisplay.add(story);
                 }

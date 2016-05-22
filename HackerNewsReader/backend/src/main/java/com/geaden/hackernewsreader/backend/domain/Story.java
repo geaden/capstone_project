@@ -44,6 +44,9 @@ public class Story {
 
     private String imageUrl;
 
+    // Number of comments
+    private int noComments;
+
     private long score;
 
     /**
@@ -140,6 +143,14 @@ public class Story {
         this.kids = kids;
     }
 
+    public int getNoComments() {
+        return noComments;
+    }
+
+    public void setNoComments(int noComments) {
+        this.noComments = noComments;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Story{");
@@ -150,6 +161,7 @@ public class Story {
         sb.append(", type='").append(type).append('\'');
         sb.append(", content='").append(content).append('\'');
         sb.append(", imageUrl='").append(imageUrl).append('\'');
+        sb.append(", comments=").append(noComments);
         sb.append(", score=").append(score);
         sb.append(", url='").append(url).append('\'');
         sb.append("}");

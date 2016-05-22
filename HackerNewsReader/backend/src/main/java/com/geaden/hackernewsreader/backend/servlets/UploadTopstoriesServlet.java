@@ -9,10 +9,12 @@ import com.firebase.client.ValueEventListener;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerPipeServiceFactory;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerpipeContentExtractionService;
 import com.geaden.hackernewsreader.backend.config.Constants;
+import com.geaden.hackernewsreader.backend.domain.Bookmark;
 import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Content;
 import com.geaden.hackernewsreader.backend.domain.Story;
 import com.geaden.hackernewsreader.backend.firebase.FirebaseFactory;
+import com.google.appengine.repackaged.com.google.api.client.util.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
 
@@ -43,12 +45,26 @@ public class UploadTopstoriesServlet extends HttpServlet {
         // Create a new Firebase instance
         Query topStories = FirebaseFactory.create(Constants.HACKER_NEWS_API_STORIES)
                 .limitToFirst(Constants.NUMBER_OF_STORIES);
-        // Delete previously stored stories...
-        List<Key<Comment>> commentKeys = ofy().load().type(Comment.class).keys().list();
-        List<Key<Story>> storyKeys = ofy().load().type(Story.class).keys().list();
-        // TODO: Do not delete stories that are bookmarked...
-        ofy().delete().keys(commentKeys).now();
-        ofy().delete().keys(storyKeys).now();
+
+        List<Bookmark> availableBookmarks = ofy().load().type(Bookmark.class).list();
+        List<Key<Story>> availableStories = ofy().load().type(Story.class).keys().list();
+        List<Key<Story>> keepStoriesKeys = Lists.newArrayList();
+
+        for (Bookmark bookmark : availableBookmarks) {
+            keepStoriesKeys.add(bookmark.getStory());
+        }
+
+        boolean removed = availableStories.removeAll(keepStoriesKeys);
+
+        if (removed) {
+            List<Key<Comment>> commentKeys = Lists.newArrayList();
+            for (Key<Story> deletedStory : availableStories) {
+                commentKeys.addAll(ofy().load().type(Comment.class).ancestor(deletedStory).keys().list());
+            }
+            ofy().delete().keys(availableStories).now();
+            ofy().delete().keys(commentKeys).now();
+        }
+
         topStories.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -65,6 +81,7 @@ public class UploadTopstoriesServlet extends HttpServlet {
                                         BoilerPipeServiceFactory.create();
                                 Content content = boilerpipeContentExtractionService.content(story.getUrl());
                                 story.setContent(content.getContent());
+                                story.setNoComments(story.getKids().size());
                                 story.setImageUrl(content.getImage());
                                 log.info(story.toString());
                             }

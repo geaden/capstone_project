@@ -97,10 +97,18 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
         getActivityCast().setSupportActionBar(mToolbar);
 
         ActionBar ab = getActivityCast().getSupportActionBar();
+
         if (null != ab) {
             ab.setTitle("");
             ab.setDisplayHomeAsUpEnabled(true);
         }
+
+        mStoryBookmark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleStoryBookmark();
+            }
+        });
 
         mStoryShareFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,6 +117,16 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
             }
         });
         return root;
+    }
+
+    private void toggleStoryBookmark() {
+        boolean storyBookmarked = Utils.checkIfBookmarked(Long.valueOf(
+                getArguments().getString(EXTRA_STORY_ID)));
+        if (!storyBookmarked) {
+            mPresenter.bookmarkStory();
+        } else {
+            mPresenter.unbookmarkStory();
+        }
     }
 
     private StoryDetailActivity getActivityCast() {
@@ -197,12 +215,14 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     public void showStoryBookmarked() {
         mStoryBookmark.setImageDrawable(
                 ContextCompat.getDrawable(getActivity(), R.drawable.ic_bookmark_white_24px));
+        mStoryBookmark.setTag(R.drawable.ic_bookmark_white_24px);
     }
 
     @Override
     public void showStoryNotBookmarked() {
         mStoryBookmark.setImageDrawable(
                 ContextCompat.getDrawable(getActivity(), R.drawable.ic_bookmark_border_white_24px));
+        mStoryBookmark.setTag(R.drawable.ic_bookmark_border_white_24px);
 
     }
 
@@ -210,6 +230,8 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     public void launchShareStoryIntent(String url) {
         Intent shareIntent = ShareCompat.IntentBuilder.from(getActivity())
                 .setText(url)
+                .setType("text/plain")
+                .setChooserTitle(R.string.share_story_intent_title)
                 .createChooserIntent();
         getActivity().startActivity(shareIntent);
     }
@@ -218,7 +240,6 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     public void launchOriginalStoryIntent(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
             getActivity().startActivity(intent);
         }
@@ -227,13 +248,11 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     @Override
     public void hideStoryContent() {
         mStoryContent.setText("");
-
     }
 
     @Override
     public void hideStoryAuthor() {
         mStoryAuthor.setText("");
-
     }
 
     @Override

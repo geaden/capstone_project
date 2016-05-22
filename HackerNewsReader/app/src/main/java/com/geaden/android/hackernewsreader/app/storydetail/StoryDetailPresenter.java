@@ -9,6 +9,7 @@ import android.support.v4.content.Loader;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.data.StoryLoader;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.DateTime;
 
@@ -98,8 +99,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
             mStoryDetailView.hideStoryTime();
         }
 
-        // TODO: check if story is bookmarked...
-        boolean bookmarked = false;
+        boolean bookmarked = Utils.checkIfBookmarked(story.getId());
 
         if (bookmarked) {
             mStoryDetailView.showStoryBookmarked();

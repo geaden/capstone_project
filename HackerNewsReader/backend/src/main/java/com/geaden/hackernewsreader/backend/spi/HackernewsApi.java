@@ -8,6 +8,7 @@ package com.geaden.hackernewsreader.backend.spi;
 
 import com.geaden.hackernewsreader.backend.config.Constants;
 import com.geaden.hackernewsreader.backend.domain.AppEngineUser;
+import com.geaden.hackernewsreader.backend.domain.Bookmark;
 import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Profile;
 import com.geaden.hackernewsreader.backend.domain.Story;
@@ -210,9 +211,22 @@ public class HackernewsApi {
             path = "topstories/{id}/comments",
             httpMethod = ApiMethod.HttpMethod.GET
     )
-    public List<Comment> getStoryComments(@Named("id") long storyId) throws NotFoundException {
-        Key<Story> storyKey = Key.create(Story.class, storyId);
-        return ofy().load().type(Comment.class).ancestor(storyKey).list();
+    public List<Comment> getStoryComments(@Named("id") final long storyId) throws NotFoundException {
+        final List<Comment> comments = Lists.newArrayList();
+        ObjectifyService.run(new VoidWork() {
+            @Override
+            public void vrun() {
+                Key<Story> storyKey = Key.create(Story.class, storyId);
+                List<Comment> storyComments = ofy().load().type(Comment.class)
+                        .ancestor(storyKey)
+                        .order("-time")
+                        .list();
+                for (Comment storyComment : storyComments) {
+                    comments.add(storyComment);
+                }
+            }
+        });
+        return comments;
     }
 
     /**
@@ -280,6 +294,12 @@ public class HackernewsApi {
                 if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
                     return new TxResult<>(new ConflictException("You have already bookmarked this story"));
                 } else {
+                    // Keep track of all bookmarks
+                    Key<Bookmark> bookmarkKey = ofy().factory().allocateId(Bookmark.class);
+                    Bookmark bookmark = new Bookmark(bookmarkKey.getId());
+                    bookmark.setProfile(Key.create(Profile.class, userId));
+                    bookmark.setStory(storyKey);
+                    ofy().save().entity(bookmark).now();
                     profile.addToBookmarkedStoriesKeys(storyKeyString);
                     ofy().save().entity(profile).now();
                     return new TxResult<>(true);
@@ -327,6 +347,13 @@ public class HackernewsApi {
                 Profile profile = getProfileFromUser(user, userId);
                 String storyKeyString = KeyFactory.keyToString(storyKey.getRaw());
                 if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
+                    // Get bookmark & delete
+                    Bookmark bookmarkToDelete = ofy().load().type(Bookmark.class).ancestor(profile)
+                            .filter("story", storyKey)
+                            .first().now();
+
+                    ofy().delete().type(Bookmark.class).id(bookmarkToDelete.getId()).now();
+                    // Remove bookmarks from profile.
                     profile.removeBookmarkedStory(storyKeyString);
                     ofy().save().entities(profile).now();
                     return new TxResult<>(true);

@@ -8,15 +8,17 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
+import android.widget.CompoundButton;
 
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.util.ActivityUtils;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -40,6 +42,8 @@ public class StoriesActivity extends AppCompatActivity {
 
     StoriesRepository mStoriesRepository;
 
+    private boolean mCurrentlyFiltered = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +66,20 @@ public class StoriesActivity extends AppCompatActivity {
 
         if (mNavView != null) {
             setupDrawerContent(mNavView);
+
+            final MenuItem menuItem = mNavView.getMenu().getItem(0);
+            SwitchCompat actionView = (SwitchCompat) MenuItemCompat.getActionView(menuItem);
+
+            mCurrentlyFiltered = Utils.getFilter(this);
+            actionView.setChecked(mCurrentlyFiltered);
+            menuItem.setChecked(mCurrentlyFiltered);
+
+            actionView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    setFilter(menuItem, isChecked);
+                }
+            });
         }
 
         StoriesFragment storiesFragment =
@@ -137,27 +155,30 @@ public class StoriesActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                    public boolean onNavigationItemSelected(final MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
                             case R.id.settings_navigation_menu_item:
-                                // TODO: Launch settings activity here...
+                                // Close the navigation drawer when an item is selected.
+                                mDrawerLayout.closeDrawers();
                                 break;
                             case R.id.bookmarks_navigation_menu_item:
-                                View actionView = MenuItemCompat.getActionView(menuItem);
-                                actionView.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        // TODO: Filter bookmarks only here...
-                                    }
-                                });
+                                SwitchCompat actionView = (SwitchCompat) MenuItemCompat.getActionView(menuItem);
+                                final boolean filterd = Utils.getFilter(StoriesActivity.this);
+                                actionView.setChecked(!filterd);
+                                setFilter(menuItem, !filterd);
+                                break;
                             default:
+                                // Close the navigation drawer when an item is selected.
+                                mDrawerLayout.closeDrawers();
                                 break;
                         }
-                        // Close the navigation drawer when an item is selected.
-                        menuItem.setChecked(true);
-                        mDrawerLayout.closeDrawers();
                         return true;
                     }
                 });
+    }
+
+    private void setFilter(MenuItem menuItem, boolean filtered) {
+        Utils.setFilter(StoriesActivity.this, filtered);
+        menuItem.setChecked(filtered);
     }
 }

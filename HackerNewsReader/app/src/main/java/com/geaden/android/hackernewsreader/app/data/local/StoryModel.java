@@ -45,6 +45,9 @@ public class StoryModel extends BaseModel {
     @Column
     String imageUrl;
 
+    @Column
+    int comments;
+
     /**
      * Helper method to get a {@link Story} from it's model.
      *
@@ -60,6 +63,7 @@ public class StoryModel extends BaseModel {
         story.setTime(new DateTime(time));
         story.setUrl(url);
         story.setImageUrl(imageUrl);
+        story.setNoComments(comments);
         return story;
     }
 
@@ -77,6 +81,7 @@ public class StoryModel extends BaseModel {
         storyModel.imageUrl = story.getImageUrl();
         storyModel.url = story.getUrl();
         storyModel.score = story.getScore();
+        storyModel.comments = story.getNoComments();
         storyModel.time = new Date(story.getTime().getValue());
         storyModel.author = story.getAuthor();
         return storyModel;

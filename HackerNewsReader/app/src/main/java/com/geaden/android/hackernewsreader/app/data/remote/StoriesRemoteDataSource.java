@@ -106,7 +106,6 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
         } catch (IOException e) {
             Log.e(TAG, "Unable to unbookmark story", e);
         }
-
     }
 
     @Override

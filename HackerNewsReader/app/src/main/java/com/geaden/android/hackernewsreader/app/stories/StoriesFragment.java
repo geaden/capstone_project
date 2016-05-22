@@ -1,11 +1,14 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +25,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 
 import java.util.ArrayList;
@@ -37,7 +41,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author Gennady Denisov
  */
-public class StoriesFragment extends Fragment implements StoriesContract.View {
+public class StoriesFragment extends Fragment implements StoriesContract.View,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private StoriesContract.Presenter mPresenter;
 
@@ -51,6 +56,9 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
 
     @Bind(R.id.noStories)
     View mNoStoriesView;
+
+    @Bind(R.id.noStoriesMain)
+    TextView mNoStoriesTextView;
 
     public StoriesFragment() {
         // Requires empty public constructor
@@ -86,6 +94,11 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), numColumns));
         mRecyclerView.setAdapter(mStoriesAdapter);
 
+        mSwipeRefreshLayout.setColorSchemeColors(
+                ContextCompat.getColor(getActivity(), R.color.colorPrimary),
+                ContextCompat.getColor(getActivity(), R.color.colorAccent),
+                ContextCompat.getColor(getActivity(), R.color.colorPrimaryDark));
+
         // Pull-to-refresh
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -99,8 +112,31 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
 
     @Override
     public void onResume() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.registerOnSharedPreferenceChangeListener(this);
         super.onResume();
+        mPresenter.setFiltering(Utils.getFilter(getActivity())
+                ? StoriesFilterType.BOOKMARKED_STORIES : StoriesFilterType.ALL_STORIES);
         mPresenter.start();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.pref_key_bookmarked_ony))) {
+            if (Utils.getFilter(getActivity())) {
+                mPresenter.setFiltering(StoriesFilterType.BOOKMARKED_STORIES);
+            } else {
+                mPresenter.setFiltering(StoriesFilterType.ALL_STORIES);
+            }
+            mPresenter.loadStories(false);
+        }
     }
 
     @Override
@@ -153,11 +189,14 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
     public void showNoStories() {
         mRecyclerView.setVisibility(View.GONE);
         mNoStoriesView.setVisibility(View.VISIBLE);
+        mNoStoriesTextView.setText(R.string.no_stories_all);
     }
 
     @Override
     public void showNoBookmarkedStories() {
-
+        mRecyclerView.setVisibility(View.GONE);
+        mNoStoriesView.setVisibility(View.VISIBLE);
+        mNoStoriesTextView.setText(R.string.no_stories_bookmarked);
     }
 
     /**
@@ -190,16 +229,13 @@ public class StoriesFragment extends Fragment implements StoriesContract.View {
 
             viewHolder.storyTitle.setText(story.getTitle());
             viewHolder.storyScore.setText(String.format("%s", story.getScore()));
-            // TODO: Set story number of comments...
-            viewHolder.storyComments.setText("42");
-            // TODO: Check if story is bookmarked
-            boolean storyIsBookmarked = false;
+            viewHolder.storyComments.setText(String.format("%s", story.getNoComments()));
+            boolean storyIsBookmarked = Utils.checkIfBookmarked(story.getId());
             if (storyIsBookmarked) {
                 viewHolder.storyBookmark.setVisibility(View.VISIBLE);
             } else {
                 viewHolder.storyBookmark.setVisibility(View.GONE);
             }
-
             // This app uses Glide for image loading
             if (null != story.getImageUrl()) {
                 Glide.with(mContext)

@@ -5,16 +5,22 @@ import android.support.v4.content.Loader;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.data.StoryLoader;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.DateTime;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Date;
 
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
@@ -23,6 +29,8 @@ import static org.mockito.Mockito.verify;
  *
  * @author Gennady Denisov
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Utils.class)
 public class StoryDetailPresenterTest {
 
     private static final String TITLE_TEST = "foo";
@@ -53,6 +61,8 @@ public class StoryDetailPresenterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        PowerMockito.mockStatic(Utils.class);
+        PowerMockito.when(Utils.checkIfBookmarked(anyLong())).thenReturn(false);
         mStory = createStory();
     }
 

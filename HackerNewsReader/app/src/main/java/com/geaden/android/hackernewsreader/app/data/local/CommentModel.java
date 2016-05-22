@@ -35,7 +35,10 @@ public class CommentModel extends BaseModel {
     @Column
     Date time;
 
-    public Comment toModel() {
+    @Column
+    int comments;
+
+    public Comment getComment() {
         Comment comment = new Comment();
         comment.setId(id);
         comment.setAuthor(author);

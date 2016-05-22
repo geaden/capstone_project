@@ -236,12 +236,14 @@ public class StoriesRepository implements StoriesDataSource {
 
     @Override
     public void bookmarkStory(@NonNull String storyId) {
-
+        mStoriesLocalDataSource.bookmarkStory(storyId);
+        mStoriesRemoteDataSource.bookmarkStory(storyId);
     }
 
     @Override
     public void unbookmarkStory(@NonNull String storyId) {
-
+        mStoriesLocalDataSource.unbookmarkStory(storyId);
+        mStoriesRemoteDataSource.unbookmarkStory(storyId);
     }
 
     @Override
@@ -252,7 +254,7 @@ public class StoriesRepository implements StoriesDataSource {
 
     @Override
     public void deleteAllStories() {
-
+        mStoriesLocalDataSource.deleteAllStories();
     }
 
     /**
