@@ -1,20 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chosen_account_view"
     android:layout_width="match_parent"
-    android:layout_height="192dp"
-    android:background="?attr/colorPrimaryDark"
-    android:gravity="bottom"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:layout_height="@dimen/navdrawer_chosen_account_height">
 
-    <!-- TODO: Place user information here... -->
+    <ImageView
+        android:id="@+id/profile_cover_image_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?colorPrimary"
+        android:contentDescription="@string/navview_header_default_image_content_description"
+        android:paddingBottom="@dimen/navdrawer_logo_vertical_padding"
+        android:paddingRight="@dimen/navdrawer_logo_padding_right"
+        android:paddingTop="@dimen/navdrawer_logo_vertical_padding"
+        android:scaleType="fitEnd" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <ImageView
+        android:id="@+id/profile_cover_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?colorPrimary"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/chosen_account_content_view"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:text="@string/navigation_view_header_title"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:paddingLeft="@dimen/keyline_1"
+        android:paddingRight="@dimen/keyline_1"
+        android:paddingTop="@dimen/keyline_1">
 
+        <com.geaden.android.hackernewsreader.app.util.BezelImageView
+            android:id="@+id/profile_photo"
+            android:layout_width="@dimen/navdrawer_profile_image_size"
+            android:layout_height="@dimen/navdrawer_profile_image_size"
+            android:scaleType="centerCrop"
+            android:src="@drawable/person_image_empty"
+            app:maskDrawable="@drawable/circle_mask" />
+
+        <ImageView
+            android:id="@+id/expand_account_box_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="@dimen/navview_start_padding"
+            android:layout_marginStart="@dimen/navview_start_padding"
+            android:paddingBottom="@dimen/navview_header_bottom_padding"
+            android:scaleType="center"
+            android:src="@drawable/ic_navview_accounts_expand"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/profile_email_text"
+            style="@style/TextAppearance.AppCompat.Body1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@id/profile_photo"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@id/profile_photo"
+            android:layout_toLeftOf="@id/expand_account_box_indicator"
+            android:layout_toStartOf="@id/expand_account_box_indicator"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingBottom="@dimen/navview_header_bottom_padding"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            tools:text="foo@bar.bz" />
+
+        <TextView
+            android:id="@+id/profile_name_text"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/profile_email_text"
+            android:layout_alignLeft="@id/profile_photo"
+            android:layout_alignStart="@id/profile_photo"
+            android:layout_toLeftOf="@id/expand_account_box_indicator"
+            android:layout_toStartOf="@id/expand_account_box_indicator"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            tools:text="Foo Bar" />
+    </RelativeLayout>
 </FrameLayout>

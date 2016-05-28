@@ -50,7 +50,7 @@ public final class Utils {
     /**
      * Sets bookmarked only filter to true.
      *
-     * @param context  the Context
+     * @param context  the Context to get PreferenceManger from.
      * @param filtered if currently filtered or not.
      */
     public static void setFilter(Context context, boolean filtered) {
@@ -63,11 +63,24 @@ public final class Utils {
     /**
      * Gets bookmarked only filter.
      *
-     * @param context the Context
+     * @param context the Context to get PreferenceManger from.
      * @return if currently filter is active.
      */
     public static boolean getFilter(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         return sp.getBoolean(context.getString(R.string.pref_key_bookmarked_ony), false);
+    }
+
+
+    /**
+     * Helper method to check if user is signed in the app.
+     *
+     * @param context the Context to get PreferenceManger from.
+     * @return if user signed in.
+     */
+    public static boolean signedIn(Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        String accountName = sp.getString(context.getString(R.string.pref_key_account_name), null);
+        return accountName != null;
     }
 }

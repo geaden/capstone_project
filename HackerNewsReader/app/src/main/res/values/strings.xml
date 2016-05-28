@@ -2,7 +2,7 @@
     <string name="app_name">HN Reader</string>
 
     <!-- Navigation view -->
-    <string name="navigation_view_header_title">Hacker New Reader</string>
+    <string name="navigation_view_header_title">Hacker News Reader</string>
     <string name="settings_title">Settings</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
@@ -25,4 +25,11 @@
     <string name="share_story_intent_title">Share story</string>
     <string name="pref_key_bookmarked_ony">key_bookmarked_only</string>
     <string name="no_stories_bookmarked">No bookmarked stories :(</string>
+    <string name="signIn">Sign in</string>
+    <string name="pref_key_account_name">key_account_name</string>
+    <string name="signOut">Sign out</string>
+    <string name="request_load_signed_in_person">request_load_signe_in_person</string>
+    <string name="nav_user_photo">User photo</string>
+    <string name="HN">HN</string>
+    <string name="navview_header_default_image_content_description">Navigation header</string>
 </resources>

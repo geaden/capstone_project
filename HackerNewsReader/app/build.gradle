@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -87,6 +88,10 @@ dependencies {
         exclude(group: 'com.google.guava', module: 'guava-jdk5')
     }
 
+    // Google Play Services
+    compile "com.google.android.gms:play-services-auth:$rootProject.ext.googlePlayServices"
+    compile "com.google.android.gms:play-services-plus:$rootProject.ext.googlePlayServices"
+
     // Dependencies for local unit tests
     testCompile "junit:junit:$rootProject.ext.junitVersion"
     testCompile "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
@@ -113,7 +118,6 @@ dependencies {
     androidTestCompile "com.android.support:support-annotations:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
     androidTestCompile "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
-
 }
 
 /*

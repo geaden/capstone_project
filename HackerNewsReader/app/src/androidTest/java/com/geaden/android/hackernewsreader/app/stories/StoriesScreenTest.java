@@ -23,10 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -116,28 +118,15 @@ public class StoriesScreenTest {
                 .getString(R.string.top_stories_toolbar_title);
         matchToolbarTitle(title);
 
-        // Add 2 stories
-        createStory(TITLE1);
-        createStory(TITLE2);
-
-        // Verify that all stories are shown
-        viewAllStories();
+        // Verify that stories are shown
         onView(withItemText(TITLE1)).check(matches(isDisplayed()));
         onView(withItemText(TITLE2)).check(matches(isDisplayed()));
     }
 
-    private void viewAllStories() {
-        // TODO: Display all stories...
+    @Test
+    public void shouldSignIn() throws Exception {
+        onView(withContentDescription("More options")).perform(click());
+        onView(withText(R.string.signIn)).perform(click());
+        Thread.sleep(10000);
     }
-
-    /**
-     * Helper method that creates two stories with provided title.
-     *
-     * @param title the title of the story.
-     */
-    private void createStory(String title) {
-        // TODO: Add stories here...
-
-    }
-
 }

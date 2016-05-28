@@ -1,0 +1,87 @@
+{
+  "project_info": {
+    "project_number": "872003973467",
+    "project_id": "hackernewsreader-1304"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872003973467:android:efd8a507a6076309",
+        "android_client_info": {
+          "package_name": "com.geaden.android.hackernewsreader.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "872003973467-iqq97rt1k8qhe9u174lakslr55dohjcv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.geaden.android.hackernewsreader.app",
+            "certificate_hash": "6B15B4B491AF87832203040E1A621ADC53EDF170"
+          }
+        },
+        {
+          "client_id": "872003973467-qv1du1k3aneqkd1ug0cj5vktbuejbng8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeo5cPlkJ079AnFVbNmV1Io26nrPTo8SQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872003973467:android:5b74b4a077ab4e92",
+        "android_client_info": {
+          "package_name": "com.geaden.android.hackernewsreader.app.mock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "872003973467-9ahsppiq55i2t4qj5vjjfe1tji9b1dnc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.geaden.android.hackernewsreader.app.mock",
+            "certificate_hash": "6B15B4B491AF87832203040E1A621ADC53EDF170"
+          }
+        },
+        {
+          "client_id": "872003973467-qv1du1k3aneqkd1ug0cj5vktbuejbng8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeo5cPlkJ079AnFVbNmV1Io26nrPTo8SQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

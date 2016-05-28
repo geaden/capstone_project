@@ -5,8 +5,9 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.google.gms:google-services:3.0.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -35,11 +36,14 @@ ext {
     // Backend dependencies
     googleAppEngineVersion = '1.9.34'
 
+    // Google Play Services
+    googlePlayServices = '9.0.0'
+
     // Objectify version
     objectifyVersion = '5.1.10'
 
     // App dependencies
-    supportLibraryVersion = '23.3.0'
+    supportLibraryVersion = '23.4.0'
     daggerVersion = '2.0'
     dbflowVersion = '3.0.0-beta6'
     butterknifeVersion = '7.0.1'

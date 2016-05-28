@@ -27,6 +27,7 @@ import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class StoriesFragment extends Fragment implements StoriesContract.View,
         SharedPreferences.OnSharedPreferenceChangeListener {
-
     private StoriesContract.Presenter mPresenter;
 
     private StoriesAdapter mStoriesAdapter;
@@ -59,6 +59,8 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
 
     @Bind(R.id.noStoriesMain)
     TextView mNoStoriesTextView;
+
+    private GoogleAccountCredential mCredential;
 
     public StoriesFragment() {
         // Requires empty public constructor

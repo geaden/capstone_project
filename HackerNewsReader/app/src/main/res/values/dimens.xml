@@ -31,4 +31,13 @@
     <!-- Comments -->
     <dimen name="item_comment_padding">16dp</dimen>
     <dimen name="item_comment_content_padding">4dp</dimen>
+
+    <!-- Nav drawer -->
+    <dimen name="navdrawer_logo_vertical_padding">16dp</dimen>
+    <dimen name="navdrawer_logo_padding_right">16dp</dimen>
+    <dimen name="navdrawer_profile_image_size">40dp</dimen>
+    <dimen name="navview_start_padding">16dp</dimen>
+    <dimen name="navview_header_bottom_padding">16dp</dimen>
+    <dimen name="navdrawer_chosen_account_height">140dp</dimen>
+    <dimen name="keyline_1">16dp</dimen>
 </resources>
