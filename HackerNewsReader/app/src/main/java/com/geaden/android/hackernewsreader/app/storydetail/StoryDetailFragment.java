@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
@@ -17,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -66,8 +69,19 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
 
+    @Bind(R.id.story_detail_view_original)
+    Button mOriginalButton;
+
+    @Bind(R.id.appbar)
+    AppBarLayout mAppBar;
+
+    @Bind(R.id.collapsing_toolbar)
+    CollapsingToolbarLayout mCollapsingToolbar;
+
     @Bind(R.id.story_bookmark_action)
     ImageButton mStoryBookmark;
+
+    private String mTitle;
 
     public StoryDetailFragment() {
         setHasOptionsMenu(true);
@@ -116,6 +130,41 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
                 mPresenter.shareStory();
             }
         });
+
+        // Add scroll listener to show toolbar title when collapsed.
+        mAppBar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            boolean isShown = false;
+            int scrollRange = -1;
+
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                if (scrollRange == -1) {
+                    scrollRange = appBarLayout.getTotalScrollRange();
+                }
+                if (scrollRange + verticalOffset == 0) {
+                    mCollapsingToolbar.setTitle(mTitle);
+                    mToolbar.setBackground(null);
+                    hideStoryTitle();
+                    mStoryTitle.setBackgroundColor(ContextCompat.getColor(getActivity(),
+                            android.R.color.transparent));
+                    isShown = true;
+                } else if (isShown) {
+                    mCollapsingToolbar.setTitle(null);
+                    mStoryTitle.setBackgroundColor(ContextCompat.getColor(getActivity(),
+                            R.color.story_detail_title_background));
+                    showStoryTitle(mTitle);
+                    isShown = false;
+                }
+            }
+        });
+
+        mOriginalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.openOriginalStory();
+            }
+        });
+
         return root;
     }
 
@@ -186,6 +235,7 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
 
     @Override
     public void showStoryTitle(String title) {
+        mTitle = title;
         mStoryTitle.setText(title);
     }
 
@@ -237,7 +287,7 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     }
 
     @Override
-    public void launchOriginalStoryIntent(String url) {
+    public void launchOriginalStoryIntent(final String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
         if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
