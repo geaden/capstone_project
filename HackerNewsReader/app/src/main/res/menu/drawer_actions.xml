@@ -6,12 +6,16 @@
         android:checkableBehavior="single">
         <item
             android:id="@+id/bookmarks_navigation_menu_item"
-            app:actionLayout="@layout/action_view_switch"
-            android:title="@string/bookmarks_only"/>
+            android:title="@string/bookmarks_only"
+            app:actionLayout="@layout/action_view_switch" />
     </group>
     <item
         android:id="@+id/settings_navigation_menu_item"
         android:icon="@drawable/ic_settings"
         android:title="@string/settings_title" />
+    <item
+        android:id="@+id/about_navigation_menu_item"
+        android:icon="@drawable/ic_about"
+        android:title="@string/about_title" />
 
 </menu>

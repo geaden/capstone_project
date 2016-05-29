@@ -28,6 +28,7 @@ import static android.support.test.espresso.contrib.DrawerActions.close;
 import static android.support.test.espresso.contrib.DrawerActions.open;
 import static android.support.test.espresso.contrib.DrawerMatchers.isClosed;
 import static android.support.test.espresso.contrib.DrawerMatchers.isOpen;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static com.geaden.android.hackernewsreader.app.custom.action.NavigationViewActions.navigateTo;
@@ -121,6 +122,29 @@ public class AppNavigationTest {
 
         onData(PreferenceMatchers.withTitle(R.string.pref_revoke_access_title))
                 .check(matches(not(isEnabled())));
+    }
+
+    @Test
+    public void clickOnAboutNavigationItem_OpensAboutScreen() {
+        // Close the drawer
+        onView(withId(R.id.drawer_layout)).perform(close());
+
+        // Open Drawer to click on navigation.
+        onView(withId(R.id.drawer_layout))
+                .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
+                .perform(open()); // Open Drawer
+
+        // Set bookmarks filter.
+        // Start statistics screen.
+        onView(withId(R.id.nav_view))
+                .perform(navigateTo(R.id.about_navigation_menu_item));
+
+        // Check that about Activity was opened.
+        String aboutTitle = InstrumentationRegistry.getTargetContext()
+                .getString(R.string.about_title);
+        StoriesScreenTest.matchToolbarTitle(aboutTitle);
+
+        onView(withId(R.id.about_main)).check(matches(isDisplayed()));
     }
 
     @Test

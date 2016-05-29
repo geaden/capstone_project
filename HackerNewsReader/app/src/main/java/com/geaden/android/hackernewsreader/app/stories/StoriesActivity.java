@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
+import com.geaden.android.hackernewsreader.app.about.AboutActivity;
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.settings.SettingsActivity;
@@ -388,6 +389,12 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
                                 final boolean filterd = Utils.getFilter(StoriesActivity.this);
                                 actionView.setChecked(!filterd);
                                 setFilter(menuItem, !filterd);
+                                break;
+                            case R.id.about_navigation_menu_item:
+                                startActivity(
+                                        new Intent(StoriesActivity.this, AboutActivity.class));
+                                // Close the navigation drawer when an item is selected.
+                                mDrawerLayout.closeDrawers();
                                 break;
                             default:
                                 // Close the navigation drawer when an item is selected.

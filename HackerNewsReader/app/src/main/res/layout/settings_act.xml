@@ -14,7 +14,6 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="@dimen/app_bar_elevation"
-        android:fitsSystemWindows="true"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/Toolbar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />

@@ -44,6 +44,14 @@
                 android:value=".stories.StoriesActivity" />
         </activity>
 
+        <activity
+            android:name=".about.AboutActivity"
+            android:parentActivityName=".stories.StoriesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".stories.StoriesActivity" />
+        </activity>
+
     </application>
 
 </manifest>
