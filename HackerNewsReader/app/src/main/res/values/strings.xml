@@ -37,4 +37,7 @@
     <string name="close">Close</string>
     <string name="stories_menu_title_search">Search</string>
     <string name="stories_search_hint">Search for stories...</string>
+    <string name="pref_key_revoke">key_revoke</string>
+    <string name="pref_revoke_access">Revoke access of HN Reader to your account</string>
+    <string name="pref_revoke_access_title">Revoke access</string>
 </resources>

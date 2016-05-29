@@ -29,6 +29,7 @@ import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
+import com.geaden.android.hackernewsreader.app.settings.SettingsActivity;
 import com.geaden.android.hackernewsreader.app.signin.SignInContract;
 import com.geaden.android.hackernewsreader.app.signin.SignInPresenter;
 import com.geaden.android.hackernewsreader.app.util.ActivityUtils;
@@ -166,17 +167,18 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
             GoogleSignInResult result = opr.get();
             mSignInPresenter.handleSignIn(result);
         } else {
-            // If the user has not previously signed in on this device or the sign-in has expired,
-            // this asynchronous branch will attempt to sign in the user silently.  Cross-device
-            // single sign-on will occur in this branch.
-            showSignInProgress(true);
-            opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                @Override
-                public void onResult(GoogleSignInResult googleSignInResult) {
-                    showSignInProgress(false);
-                    mSignInPresenter.handleSignIn(googleSignInResult);
-                }
-            });
+            // Try to sign in asynchronously
+            // if user was already signed in.
+            if (Utils.getEmailAccount(this) != null) {
+                showSignInProgress(true);
+                opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                    @Override
+                    public void onResult(GoogleSignInResult googleSignInResult) {
+                        showSignInProgress(false);
+                        mSignInPresenter.handleSignIn(googleSignInResult);
+                    }
+                });
+            }
         }
     }
 
@@ -376,6 +378,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
                     public boolean onNavigationItemSelected(final MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
                             case R.id.settings_navigation_menu_item:
+                                Intent intent = new Intent(StoriesActivity.this, SettingsActivity.class);
+                                startActivity(intent);
                                 // Close the navigation drawer when an item is selected.
                                 mDrawerLayout.closeDrawers();
                                 break;

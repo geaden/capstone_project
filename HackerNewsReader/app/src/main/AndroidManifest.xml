@@ -36,6 +36,14 @@
                 android:value=".storydetail.StoryDetailActivity" />
         </activity>
 
+        <activity
+            android:name=".settings.SettingsActivity"
+            android:parentActivityName=".stories.StoriesActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".stories.StoriesActivity" />
+        </activity>
+
     </application>
 
 </manifest>

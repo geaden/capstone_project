@@ -93,6 +93,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     }
 
     @Override
+    @SuppressWarnings("")
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.stories_frag_menu, menu);
