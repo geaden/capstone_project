@@ -113,6 +113,30 @@ public class StoriesPresenter implements StoriesContract.Presenter,
         }
     }
 
+    @Override
+    public void loadStoriesByName(String query) {
+        List<Story> storiesToDisplay = new ArrayList<>();
+
+        if (mCurrentStories != null) {
+            for (Story story : mCurrentStories) {
+                if (story.getTitle().toLowerCase().contains(query.toLowerCase())) {
+                    switch (mCurrentFiltering) {
+                        case BOOKMARKED_STORIES:
+                            if (Utils.checkIfBookmarked(story.getId())) {
+                                storiesToDisplay.add(story);
+                            }
+                            break;
+                        default:
+                            storiesToDisplay.add(story);
+                    }
+                }
+            }
+        }
+
+        processStories(storiesToDisplay);
+
+    }
+
     /**
      * Processes empty tasks and notify user accordingly.
      */

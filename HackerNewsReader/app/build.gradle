@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -144,3 +143,5 @@ at runtime. More info in this tools bug: (https://code.google.com/p/android/issu
         }
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

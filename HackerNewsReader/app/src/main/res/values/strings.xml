@@ -35,4 +35,6 @@
     <string name="api_error_title">Error</string>
     <string name="api_error_message">Error</string>
     <string name="close">Close</string>
+    <string name="stories_menu_title_search">Search</string>
+    <string name="stories_search_hint">Search for stories...</string>
 </resources>

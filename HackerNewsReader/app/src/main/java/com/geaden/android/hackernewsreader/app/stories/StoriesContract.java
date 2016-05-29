@@ -66,6 +66,13 @@ public class StoriesContract {
         void loadStories(boolean forceUpdate);
 
         /**
+         * Loads stories by name.
+         *
+         * @param query query containing name of the story.
+         */
+        void loadStoriesByName(String query);
+
+        /**
          * Opens story details.
          *
          * @param requestedStory the requested {@link Story}

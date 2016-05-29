@@ -1,5 +1,6 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,10 +10,16 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -27,7 +34,6 @@ import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +57,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     @Bind(R.id.refresh_layout)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
-    @Bind(R.id.comments_list)
+    @Bind(R.id.stories_grid)
     RecyclerView mRecyclerView;
 
     @Bind(R.id.noStories)
@@ -60,10 +66,11 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     @Bind(R.id.noStoriesMain)
     TextView mNoStoriesTextView;
 
-    private GoogleAccountCredential mCredential;
+    private MenuItem mSearchItem;
+    private SearchView mSearchView;
 
     public StoriesFragment() {
-        // Requires empty public constructor
+        setHasOptionsMenu(true);
     }
 
     public static StoriesFragment newInstance() {
@@ -74,6 +81,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     StoryItemListener mItemListener = new StoryItemListener() {
         @Override
         public void onStoryClicked(Story clickedStory, View storyImage) {
+            resetSearchView();
             mPresenter.openStoryDetails(clickedStory, storyImage);
         }
     };
@@ -83,6 +91,66 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
         super.onCreate(savedInstanceState);
         mStoriesAdapter = new StoriesAdapter(getContext(), new ArrayList<Story>(0), mItemListener);
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.stories_frag_menu, menu);
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+
+        mSearchItem = menu.findItem(R.id.menu_stories_search);
+        mSearchView = (SearchView) mSearchItem.getActionView();
+
+        mSearchView.setQueryHint(getString(R.string.stories_search_hint));
+        mSearchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getActivity().getComponentName()));
+
+        mSearchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                if (!TextUtils.isEmpty(mSearchView.getQuery())) {
+                    mSearchView.setQuery(null, true);
+                }
+                return true;
+            }
+        });
+
+        // Set search query text listener...
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                if (!TextUtils.isEmpty(query)) {
+                    mPresenter.loadStoriesByName(query);
+                } else {
+                    // Just load all artists.
+                    mPresenter.loadStories(false);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Don't care about this.
+                return true;
+            }
+        });
+    }
+
+    /**
+     * Helper methods that resets state of search view and it's menu item.
+     */
+    private void resetSearchView() {
+        if (null != mSearchView) {
+            mSearchView.setQuery(null, true);
+        }
+        if (null != mSearchItem) {
+            MenuItemCompat.collapseActionView(mSearchItem);
+        }
+    }
+
 
     @Nullable
     @Override

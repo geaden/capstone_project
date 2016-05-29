@@ -1,6 +1,8 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
@@ -26,15 +28,19 @@ import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Tests for the stories screen, the main screen which contains a list of all top stories.
@@ -89,6 +95,19 @@ public class StoriesScreenTest {
                 withParent(isAssignableFrom(Toolbar.class)))).check(matches(withText(title.toString())));
     }
 
+    public static ViewAssertion hasItemsCount(final int count) {
+        return new ViewAssertion() {
+            @Override
+            public void check(View view, NoMatchingViewException e) {
+                if (!(view instanceof RecyclerView)) {
+                    throw e;
+                }
+                RecyclerView rv = (RecyclerView) view;
+                assertThat(rv.getAdapter().getItemCount(), is(count));
+            }
+        };
+    }
+
     /**
      * {@link ActivityTestRule} is a JUnit {@link Rule @Rule} to launch your activity under test.
      * <p/>
@@ -131,6 +150,16 @@ public class StoriesScreenTest {
         // Verify that stories are shown
         onView(withItemText(TITLE1)).check(matches(isDisplayed()));
         onView(withItemText(TITLE2)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void searchStoryByName() {
+        onView(withId(R.id.menu_stories_search)).perform(click());
+
+        onView(withId(android.support.design.R.id.search_src_text)).perform(typeText("foo"));
+
+        // Check proper number of items loaded from repository.
+        onView(withId(R.id.stories_grid)).check(hasItemsCount(1));
     }
 
     @Test

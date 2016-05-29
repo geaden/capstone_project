@@ -14,16 +14,44 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 public interface SignInContract {
 
     interface View extends BaseView<Presenter> {
+        /**
+         * Shows signing progress.
+         *
+         * @param active if active.
+         */
         void showSignInProgress(boolean active);
 
+        /**
+         * Shows user cover photo.
+         *
+         * @param coverPhotoUrl cover photo URL fro users's Google+ Account.
+         */
         void showCoverPhoto(@NonNull String coverPhotoUrl);
 
+        /**
+         * Shows user photo.
+         *
+         * @param userPhotoUrl user's Google+ photo.
+         */
         void showPhoto(@NonNull String userPhotoUrl);
 
+        /**
+         * Shows user's display name.
+         *
+         * @param displayName user's display name from Google+.
+         */
         void showDisplayName(@NonNull String displayName);
 
+        /**
+         * User's email from selected Google+ account.
+         *
+         * @param email user's email.
+         */
         void showEmail(String email);
 
+        /**
+         * Hides email to indicate user is not singed in.
+         */
         void hideEmail();
 
         void hideDisplayName();
@@ -32,21 +60,48 @@ public interface SignInContract {
 
         void hidePhoto();
 
+        /**
+         * Initiates starting of sign in intent.
+         */
         void startSignInIntent();
 
+        /**
+         * Updates menu items accordingly.
+         *
+         * @param signedIn if user signed in.
+         */
         void updateMenuItems(boolean signedIn);
 
+        /**
+         * Saves account email to preferences.
+         *
+         * @param accountEmail user's email.
+         */
         void saveAccount(String accountEmail);
 
+        /**
+         * Loads bookmarks from backend.
+         */
         void startLoadBookmarksTask();
     }
 
     interface Presenter extends BasePresenter {
 
+        /**
+         * Sign in user.
+         */
         void signIn();
 
+        /**
+         * Sign out.
+         */
         void signOut();
 
+        /**
+         * Handle sign in intent.
+         *
+         * @param result result of intent.
+         */
         void handleSignIn(GoogleSignInResult result);
     }
 }

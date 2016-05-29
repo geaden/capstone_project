@@ -192,7 +192,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mMenu = menu;
-        getMenuInflater().inflate(R.menu.stories_menu, menu);
+        getMenuInflater().inflate(R.menu.stories_act_menu, menu);
         return true;
     }
 
