@@ -46,7 +46,13 @@ import static com.geaden.hackernewsreader.backend.service.OfyService.ofy;
                 ownerDomain = "backend.hackernewsreader.geaden.com",
                 ownerName = "backend.hackernewsreader.geaden.com",
                 packagePath = ""
-        )
+        ),
+        scopes = {Constants.EMAIL_SCOPE},
+        clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID,
+                Constants.API_EXPLORER_CLIENT_ID},
+        audiences = {Constants.ANDROID_AUDIENCE},
+        description = "Conference Central API for creating and querying conferences," +
+                " and for creating and getting user Profiles"
 )
 public class HackernewsApi {
 

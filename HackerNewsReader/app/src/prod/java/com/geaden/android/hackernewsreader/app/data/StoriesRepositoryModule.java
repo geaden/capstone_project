@@ -28,7 +28,7 @@ public class StoriesRepositoryModule {
     @Singleton
     @Provides
     @Remote
-    StoriesDataSource provideStoriesRemoteDataSource() {
-        return new StoriesRemoteDataSource();
+    StoriesDataSource provideStoriesRemoteDataSource(Context context) {
+        return StoriesRemoteDataSource.getInstance(context);
     }
 }

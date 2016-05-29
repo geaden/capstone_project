@@ -35,6 +35,10 @@ public interface SignInContract {
         void startSignInIntent();
 
         void updateMenuItems(boolean signedIn);
+
+        void saveAccount(String accountEmail);
+
+        void startLoadBookmarksTask();
     }
 
     interface Presenter extends BasePresenter {
@@ -44,7 +48,5 @@ public interface SignInContract {
         void signOut();
 
         void handleSignIn(GoogleSignInResult result);
-
-        boolean isSignedIn();
     }
 }

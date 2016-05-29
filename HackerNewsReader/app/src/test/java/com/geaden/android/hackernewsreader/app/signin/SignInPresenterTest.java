@@ -49,6 +49,8 @@ public class SignInPresenterTest {
     public void handleSignIn() {
         mSignInPresenter.handleSignIn(mResult);
         verify(mView).hideEmail();
+        verify(mView).updateMenuItems(false);
+        verify(mView).saveAccount(null);
     }
 
 }

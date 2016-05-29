@@ -140,7 +140,26 @@ public class StoriesRepository implements StoriesDataSource {
                 mStoriesLocalDataSource.saveComment(storyId, comment);
             }
         }
+    }
 
+    @Override
+    public List<Story> getBookmarkedStories(boolean update) {
+
+        List<Story> stories;
+
+        if (update) {
+            stories = mStoriesRemoteDataSource.getBookmarkedStories(update);
+
+            if (stories != null) {
+                for (Story bookmarkedStory : stories) {
+                    mStoriesLocalDataSource.bookmarkStory(Long.toString(bookmarkedStory.getId()));
+                }
+            }
+        } else {
+            stories = mStoriesLocalDataSource.getBookmarkedStories(update);
+        }
+
+        return stories;
     }
 
     @Override

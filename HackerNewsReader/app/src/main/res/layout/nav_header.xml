@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:paddingLeft="@dimen/keyline_1"
         android:paddingRight="@dimen/keyline_1"
-        android:paddingTop="@dimen/keyline_1">
+        android:paddingTop="32dp">
 
         <com.geaden.android.hackernewsreader.app.util.BezelImageView
             android:id="@+id/profile_photo"

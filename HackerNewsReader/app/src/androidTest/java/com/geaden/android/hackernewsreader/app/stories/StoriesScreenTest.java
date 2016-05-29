@@ -14,10 +14,12 @@ import android.widget.TextView;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -111,6 +113,14 @@ public class StoriesScreenTest {
                 }
             };
 
+    @Before
+    public void setUp() {
+        // Make user not signed in
+        Utils.saveEmailAccount(InstrumentationRegistry.getTargetContext(), null);
+        // Set default filter to ALL
+        Utils.setFilter(InstrumentationRegistry.getTargetContext(), false);
+    }
+
     @Test
     public void showAllStories() {
         // Check title
@@ -126,7 +136,6 @@ public class StoriesScreenTest {
     @Test
     public void shouldSignIn() throws Exception {
         onView(withContentDescription("More options")).perform(click());
-        onView(withText(R.string.signIn)).perform(click());
-        Thread.sleep(10000);
+        onView(withText(R.string.signIn)).check(matches(isDisplayed()));
     }
 }

@@ -3,6 +3,7 @@ package com.geaden.android.hackernewsreader.app.stories;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,6 +37,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -49,6 +51,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
 
     private static final String CURRENT_FILTERING_KEY = "CURRENT_FILTERING_KEY";
     private static final int RC_SIGN_IN = 0;
+    private static final int RC_GOOGLE_PLAY_SERVICE = 1;
 
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
@@ -74,6 +77,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     private ProgressDialog mProgressDialog;
     private Menu mMenu;
 
+    private LoadBookmarksAsyncTask mLoadBookmarksTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +98,9 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         mDrawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
 
         mDrawerToggle = setupDrawerToggle();
+
+        // Tie DrawerLayout events to the ActionBarToggle
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         if (mNavView != null) {
 
@@ -135,9 +143,9 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
                 storiesFragment
         );
 
-        buildGoogleApiClient();
-
-        mSignInPresenter = new SignInPresenter(mGoogleApiClient, this);
+        if (checkGooglePlayServices()) {
+            mSignInPresenter = new SignInPresenter(mGoogleApiClient, this);
+        }
 
         // Load previously saved state, if available.
         if (savedInstanceState != null) {
@@ -173,6 +181,15 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mLoadBookmarksTask != null) {
+            mLoadBookmarksTask.cancel(true);
+            mLoadBookmarksTask = null;
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mMenu = menu;
         getMenuInflater().inflate(R.menu.stories_menu, menu);
@@ -182,11 +199,19 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // Result returned from launching the Intent from
-        // GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            mSignInPresenter.handleSignIn(result);
+        switch (requestCode) {
+            case RC_GOOGLE_PLAY_SERVICE:
+                buildGoogleApiClient();
+                mStoriesPresenter.start();
+                break;
+            case RC_SIGN_IN:
+                // Result returned from launching the Intent from
+                // GoogleSignInApi.getSignInIntent(...);
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                mSignInPresenter.handleSignIn(result);
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -214,7 +239,46 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     protected void onResume() {
         super.onResume();
-        mSignInPresenter.start();
+        // Check Google Play Services are available.
+        if (mSignInPresenter != null) {
+            mSignInPresenter.start();
+        }
+    }
+
+    /**
+     * Checks if latest Google Play Services are installed.
+     */
+    private boolean checkGooglePlayServices() {
+        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+        int result = googleApiAvailability.isGooglePlayServicesAvailable(this);
+        if (ConnectionResult.SUCCESS == result) {
+            // Connect to Google Api Client.
+            buildGoogleApiClient();
+            return true;
+        } else {
+            if (googleApiAvailability.isUserResolvableError(result)) {
+                googleApiAvailability.getErrorDialog(this, result, RC_GOOGLE_PLAY_SERVICE).show();
+            } else {
+                // TODO: Display connection error dialog...
+            }
+            return false;
+        }
+
+    }
+
+    @Override
+    public void startLoadBookmarksTask() {
+        if (mLoadBookmarksTask != null) {
+            mLoadBookmarksTask.cancel(true);
+        }
+        // Start task to load tasks from the background.
+        mLoadBookmarksTask = new LoadBookmarksAsyncTask();
+        mLoadBookmarksTask.execute();
+    }
+
+    @Override
+    public void saveAccount(String accountEmail) {
+        Utils.saveEmailAccount(this, accountEmail);
     }
 
     @Override
@@ -246,7 +310,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (!connectionResult.hasResolution()) {
-//            mGoogleApiClient.getErrorDialog(this, result.getErrorCode(),request_code).show();
+//            GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(),
+//                    request_code).show();
             return;
         }
 
@@ -287,7 +352,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         }
         switch (item.getItemId()) {
             case R.id.item_sign_in:
-                if (mSignInPresenter.isSignedIn()) {
+                String emailAccount = Utils.getEmailAccount(this);
+                if (emailAccount != null) {
                     mSignInPresenter.signOut();
                 } else {
                     mSignInPresenter.signIn();
@@ -383,6 +449,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void showEmail(String email) {
         mNavViewHolder.profileEmail.setText(email);
+        mNavViewHolder.profileExpand.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -393,6 +460,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void hideEmail() {
         mNavViewHolder.profileEmail.setText("");
+        mNavViewHolder.profileExpand.setVisibility(View.GONE);
     }
 
     @Override
@@ -424,6 +492,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
 
         ImageView profileCoverPhoto;
 
+        ImageView profileExpand;
+
         public NavigationViewHolder(View view) {
             ButterKnife.bind(view);
             profileName = (TextView) view.findViewById(R.id.profile_name_text);
@@ -431,6 +501,37 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
             profilePhoto = (ImageView) view.findViewById(R.id.profile_photo);
             profileCoverPlaceholder = (ImageView) view.findViewById(R.id.profile_cover_image_placeholder);
             profileCoverPhoto = (ImageView) view.findViewById(R.id.profile_cover_image);
+            profileExpand = (ImageView) view.findViewById(R.id.expand_account_box_indicator);
+        }
+    }
+
+    /**
+     * Simple async task to load bookmarks in the background.
+     */
+    private class LoadBookmarksAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            mStoriesRepository.getBookmarkedStories(true);
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mLoadBookmarksTask = this;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            mLoadBookmarksTask = null;
+        }
+
+        @Override
+        protected void onCancelled() {
+            mLoadBookmarksTask = null;
         }
     }
 }
+

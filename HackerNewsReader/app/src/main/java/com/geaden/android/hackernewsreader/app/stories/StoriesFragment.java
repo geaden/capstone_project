@@ -90,7 +90,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
         View root = inflater.inflate(R.layout.stories_frag, container, false);
         ButterKnife.bind(this, root);
 
-        int numColumns = getContext().getResources().getInteger(R.integer.num_artists_columns);
+        int numColumns = getContext().getResources().getInteger(R.integer.num_stories_columns);
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), numColumns));

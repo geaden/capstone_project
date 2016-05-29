@@ -25,8 +25,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class SignInPresenter implements SignInContract.Presenter {
 
-    public final static String REQUEST_PROFILE = "request_profile";
-
     @NonNull
     private SignInContract.View mSignInView;
 
@@ -34,8 +32,6 @@ public class SignInPresenter implements SignInContract.Presenter {
     private GoogleApiClient mGoogleApiClient;
 
     private AppProfile mAppProfile;
-
-    private boolean mSignedIn;
 
     public SignInPresenter(@NonNull GoogleApiClient googleApiClient, @NonNull SignInContract.View signInView) {
         checkNotNull(googleApiClient, "googleApiClient cannot be null!");
@@ -59,13 +55,14 @@ public class SignInPresenter implements SignInContract.Presenter {
                         hideProfile();
                     }
                 });
-        mSignedIn = false;
+        mSignInView.updateMenuItems(false);
+        mSignInView.saveAccount(null);
     }
 
     @Override
     public void handleSignIn(GoogleSignInResult result) {
+        boolean signedIn;
         if (result.isSuccess()) {
-            mSignedIn = true;
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
@@ -76,12 +73,16 @@ public class SignInPresenter implements SignInContract.Presenter {
                 mAppProfile = new AppProfile();
             }
             loadProfile(mAppProfile);
+            mSignInView.saveAccount(mAppProfile.getEmail());
+            mSignInView.startLoadBookmarksTask();
+            signedIn = true;
         } else {
             // Signed out, show unauthenticated UI.
-            mSignedIn = false;
+            mSignInView.saveAccount(null);
             hideProfile();
+            signedIn = false;
         }
-        mSignInView.updateMenuItems(mSignedIn);
+        mSignInView.updateMenuItems(signedIn);
     }
 
     @VisibleForTesting
@@ -140,11 +141,6 @@ public class SignInPresenter implements SignInContract.Presenter {
         } else {
             mSignInView.hideCoverPhoto();
         }
-    }
-
-    @Override
-    public boolean isSignedIn() {
-        return mSignedIn;
     }
 
     private void hideProfile() {

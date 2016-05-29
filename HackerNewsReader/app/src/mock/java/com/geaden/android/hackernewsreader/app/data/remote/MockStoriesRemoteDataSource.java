@@ -97,6 +97,12 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
 
     }
 
+    @Nullable
+    @Override
+    public List<Story> getBookmarkedStories(boolean update) {
+        return null;
+    }
+
     @Override
     public void bookmarkStory(@NonNull String storyId) {
 

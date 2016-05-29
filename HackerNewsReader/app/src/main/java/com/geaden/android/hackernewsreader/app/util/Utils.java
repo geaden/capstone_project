@@ -1,8 +1,10 @@
 package com.geaden.android.hackernewsreader.app.util;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 
 import com.geaden.android.hackernewsreader.app.R;
@@ -16,6 +18,8 @@ import com.raizlabs.android.dbflow.sql.language.SQLite;
  * @author Gennady Denisov
  */
 public final class Utils {
+
+    private final static String PREFS_KEY_EMAIL = "email_account";
 
     private Utils() {
 
@@ -71,16 +75,73 @@ public final class Utils {
         return sp.getBoolean(context.getString(R.string.pref_key_bookmarked_ony), false);
     }
 
+    /**
+     * Persists the email address to preference storage space.
+     *
+     * @param context the Context to get PreferenceManager.
+     * @param email   account email.
+     */
+    public static void saveEmailAccount(Context context, String email) {
+        saveStringToPreference(context, PREFS_KEY_EMAIL, email);
+    }
 
     /**
-     * Helper method to check if user is signed in the app.
+     * Returns the persisted email account, or <code>null</code> if none found.
      *
-     * @param context the Context to get PreferenceManger from.
-     * @return if user signed in.
+     * @param context the Context to get PreferenceManager.
+     * @return email account.
      */
-    public static boolean signedIn(Context context) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        String accountName = sp.getString(context.getString(R.string.pref_key_account_name), null);
-        return accountName != null;
+    public static String getEmailAccount(Context context) {
+        return getStringFromPreference(context, PREFS_KEY_EMAIL);
+    }
+
+    /**
+     * Saves a string value under the provided key in the preference manager. If <code>value</code>
+     * is <code>null</code>, then the provided key will be removed from the preferences.
+     *
+     * @param context the Context to get PreferenceManager.
+     * @param key     preference key.
+     * @param value   preference value.
+     */
+    public static void saveStringToPreference(Context context, String key, String value) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        if (null == value) {
+            // we want to remove
+            pref.edit().remove(key).apply();
+        } else {
+            pref.edit().putString(key, value).apply();
+        }
+    }
+
+    /**
+     * Retrieves a String value from preference manager. If no such key exists, it will return
+     * <code>null</code>.
+     *
+     * @param context the Context to get PreferenceManager.
+     * @param key     preference key.
+     * @return the value that is stored under the key.
+     */
+    public static String getStringFromPreference(Context context, String key) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        return pref.getString(key, null);
+    }
+
+    /**
+     * Displays error dialog when a network error occurs. Exits application when user confirms
+     * dialog.
+     *
+     * @param context the Context to build {@link AlertDialog}.
+     */
+    public static void displayNetworkErrorMessage(Context context) {
+        new AlertDialog.Builder(
+                context).setTitle(R.string.api_error_title)
+                .setMessage(R.string.api_error_message)
+                .setCancelable(false)
+                .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                System.exit(0);
+                            }
+                        }
+                ).create().show();
     }
 }

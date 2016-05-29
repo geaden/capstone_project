@@ -32,4 +32,7 @@
     <string name="nav_user_photo">User photo</string>
     <string name="HN">HN</string>
     <string name="navview_header_default_image_content_description">Navigation header</string>
+    <string name="api_error_title">Error</string>
+    <string name="api_error_message">Error</string>
+    <string name="close">Close</string>
 </resources>

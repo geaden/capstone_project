@@ -87,6 +87,22 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         storyModel.save();
     }
 
+    @Nullable
+    @Override
+    public List<Story> getBookmarkedStories(boolean update) {
+        List<StoryModel> storyModels = SQLite.select().from(StoryModel.class)
+                .where(StoryModel_Table.id.in(
+                        SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
+                )).queryList();
+
+        List<Story> bookmarkedStories = Lists.newArrayList();
+        for (StoryModel storyModel : storyModels) {
+            bookmarkedStories.add(storyModel.getStory());
+        }
+
+        return bookmarkedStories;
+    }
+
     @Override
     public void bookmarkStory(@NonNull String storyId) {
         BookmarkModel bookmarkModel = new BookmarkModel();

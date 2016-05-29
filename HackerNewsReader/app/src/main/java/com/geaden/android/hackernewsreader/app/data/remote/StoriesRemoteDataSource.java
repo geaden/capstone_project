@@ -1,16 +1,21 @@
 package com.geaden.android.hackernewsreader.app.data.remote;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.geaden.android.hackernewsreader.app.AppConstants;
+import com.geaden.android.hackernewsreader.app.BuildConfig;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.android.hackernewsreader.app.util.Config;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.Hackernews;
 import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 
@@ -24,26 +29,41 @@ import java.util.List;
  */
 public class StoriesRemoteDataSource implements StoriesDataSource {
 
-    private static final Hackernews sApi;
+    private static Hackernews sApi;
 
     private static final String TAG = "StoriesRemoteDS";
 
-    static {
-        // TODO: Add credentials and manage compression...
-        sApi = new Hackernews.Builder(AndroidHttp.newCompatibleTransport(),
-                new AndroidJsonFactory(), null)
+    private static StoriesRemoteDataSource sInstance;
+
+    private StoriesRemoteDataSource(Context context) {
+        String emailAccount = Utils.getEmailAccount(context);
+        GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context,
+                AppConstants.AUDIENCE);
+        credential.setSelectedAccountName(emailAccount);
+
+        Hackernews.Builder apiBuilder = new Hackernews.Builder(AndroidHttp.newCompatibleTransport(),
+                new AndroidJsonFactory(), emailAccount != null ? credential : null)
                 // options for running against local devappserver
                 // - 10.0.2.2 is localhost's IP address in Android emulator
                 // - turn off compression when running against local devappserver
-                .setRootUrl(Config.ROOT_URL)
-                .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
-                    @Override
-                    public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest)
-                            throws IOException {
-                        abstractGoogleClientRequest.setDisableGZipContent(true);
-                    }
-                })
-                .build();
+                .setRootUrl(Config.ROOT_URL);
+        if (BuildConfig.DEBUG) {
+            apiBuilder.setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
+                @Override
+                public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest)
+                        throws IOException {
+                    abstractGoogleClientRequest.setDisableGZipContent(true);
+                }
+            });
+        }
+        sApi = apiBuilder.build();
+    }
+
+    static StoriesRemoteDataSource getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new StoriesRemoteDataSource(context);
+        }
+        return sInstance;
     }
 
     @Nullable
@@ -88,6 +108,17 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     public void saveStory(@NonNull Story story) {
         throw new UnsupportedOperationException("Remote save is not supported for a story!");
 
+    }
+
+    @Nullable
+    @Override
+    public List<Story> getBookmarkedStories(boolean update) {
+        try {
+            sApi.getBookmarkedStories().execute().getItems();
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to get bookmarked stories", e);
+        }
+        return null;
     }
 
     @Override
