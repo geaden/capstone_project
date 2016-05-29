@@ -250,7 +250,8 @@ public class HackernewsApi {
         if (null == user) {
             throw new UnauthorizedException("Authorization required.");
         }
-        Profile profile = ofy().load().key(Key.create(Profile.class, getUserId(user))).now();
+        String userId = getUserId(user);
+        Profile profile = getProfileFromUser(user, userId);
         if (null == profile) {
             throw new NotFoundException("Profile doesn't exist.");
         }

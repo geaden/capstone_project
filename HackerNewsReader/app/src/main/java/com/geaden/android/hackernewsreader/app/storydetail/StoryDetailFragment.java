@@ -31,6 +31,7 @@ import com.geaden.android.hackernewsreader.app.comments.CommentsActivity;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 
 import java.util.Date;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -80,6 +81,8 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
 
     @Bind(R.id.story_bookmark_action)
     ImageButton mStoryBookmark;
+
+    private List<Long> mBookmarkedStorie;
 
     private String mTitle;
 
@@ -170,7 +173,7 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
 
     private void toggleStoryBookmark() {
         boolean storyBookmarked = Utils.checkIfBookmarked(Long.valueOf(
-                getArguments().getString(EXTRA_STORY_ID)));
+                getArguments().getString(EXTRA_STORY_ID)), mBookmarkedStorie);
         if (!storyBookmarked) {
             mPresenter.bookmarkStory();
         } else {
@@ -224,6 +227,8 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     public void showStoryImage(@NonNull String imageUrl) {
         Glide.with(getActivity())
                 .load(imageUrl)
+                .centerCrop()
+                .placeholder(R.drawable.story_image_default)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(mStoryImage);
     }

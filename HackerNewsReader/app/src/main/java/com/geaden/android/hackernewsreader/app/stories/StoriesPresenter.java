@@ -79,11 +79,13 @@ public class StoriesPresenter implements StoriesContract.Presenter,
     private void showFilteredStories() {
         List<Story> storiesToDisplay = new ArrayList<>();
 
+        List<Long> bookmarkedStories = null;
+
         if (mCurrentStories != null) {
             for (Story story : mCurrentStories) {
                 switch (mCurrentFiltering) {
                     case BOOKMARKED_STORIES:
-                        if (Utils.checkIfBookmarked(story.getId())) {
+                        if (Utils.checkIfBookmarked(story.getId(), bookmarkedStories)) {
                             storiesToDisplay.add(story);
                         }
                         break;
@@ -117,12 +119,14 @@ public class StoriesPresenter implements StoriesContract.Presenter,
     public void loadStoriesByName(String query) {
         List<Story> storiesToDisplay = new ArrayList<>();
 
+        List<Long> bookmarkedStories = null;
+
         if (mCurrentStories != null) {
             for (Story story : mCurrentStories) {
                 if (story.getTitle().toLowerCase().contains(query.toLowerCase())) {
                     switch (mCurrentFiltering) {
                         case BOOKMARKED_STORIES:
-                            if (Utils.checkIfBookmarked(story.getId())) {
+                            if (Utils.checkIfBookmarked(story.getId(), bookmarkedStories)) {
                                 storiesToDisplay.add(story);
                             }
                             break;

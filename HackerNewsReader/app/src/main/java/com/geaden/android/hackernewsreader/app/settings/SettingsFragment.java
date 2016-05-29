@@ -68,6 +68,7 @@ public class SettingsFragment extends PreferenceFragment implements GoogleApiCli
                         mRevokePreference.setEnabled(false);
                     }
                 });
+        Utils.saveEmailAccount(getActivity(), null);
     }
 
     @Override

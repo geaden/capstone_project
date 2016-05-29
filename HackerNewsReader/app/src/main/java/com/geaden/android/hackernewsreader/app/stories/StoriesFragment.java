@@ -27,9 +27,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
 import com.geaden.android.hackernewsreader.app.util.Utils;
@@ -279,6 +276,8 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
         private List<Story> mStories;
         private StoryItemListener mItemListener;
 
+        private List<Long> mBookmarkedStories;
+
         public StoriesAdapter(Context context, List<Story> artists, StoryItemListener itemListener) {
             mContext = context;
             setList(artists);
@@ -301,7 +300,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
             viewHolder.storyTitle.setText(story.getTitle());
             viewHolder.storyScore.setText(String.format("%s", story.getScore()));
             viewHolder.storyComments.setText(String.format("%s", story.getNoComments()));
-            boolean storyIsBookmarked = Utils.checkIfBookmarked(story.getId());
+            boolean storyIsBookmarked = Utils.checkIfBookmarked(story.getId(), mBookmarkedStories);
             if (storyIsBookmarked) {
                 viewHolder.storyBookmark.setVisibility(View.VISIBLE);
             } else {
@@ -311,16 +310,12 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
             if (null != story.getImageUrl()) {
                 Glide.with(mContext)
                         .load(story.getImageUrl())
+                        .placeholder(R.drawable.story_image_default)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(new GlideDrawableImageViewTarget(viewHolder.storyImage) {
-                            @Override
-                            public void onResourceReady(GlideDrawable resource,
-                                                        GlideAnimation<? super GlideDrawable> animation) {
-                                super.onResourceReady(resource, animation);
-                            }
-                        });
+                        .into(viewHolder.storyImage);
             } else {
-                // TODO: Load random image for the story then...
+                viewHolder.storyImage.setImageDrawable(ContextCompat.getDrawable(mContext,
+                        R.drawable.story_image_default));
             }
 
         }

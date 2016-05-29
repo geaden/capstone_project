@@ -33,8 +33,6 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
 
     private static final String TAG = "StoriesRemoteDS";
 
-    private static StoriesRemoteDataSource sInstance;
-
     private StoriesRemoteDataSource(Context context) {
         String emailAccount = Utils.getEmailAccount(context);
         GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context,
@@ -56,14 +54,12 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
                 }
             });
         }
+        apiBuilder.setApplicationName("hackernews");
         sApi = apiBuilder.build();
     }
 
-    static StoriesRemoteDataSource getInstance(Context context) {
-        if (sInstance == null) {
-            sInstance = new StoriesRemoteDataSource(context);
-        }
-        return sInstance;
+    public static StoriesRemoteDataSource getInstance(Context context) {
+        return new StoriesRemoteDataSource(context);
     }
 
     @Nullable

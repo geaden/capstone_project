@@ -3,6 +3,7 @@ package com.geaden.android.hackernewsreader.app.util;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
@@ -10,7 +11,10 @@ import android.text.format.DateUtils;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.data.local.BookmarkModel;
 import com.geaden.android.hackernewsreader.app.data.local.BookmarkModel_Table;
+import com.google.api.client.util.Lists;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
+
+import java.util.List;
 
 /**
  * Holder for utility methods.
@@ -41,14 +45,23 @@ public final class Utils {
     /**
      * Helper method to find if story bookmarked or not.
      *
-     * @param storyId the story id.
+     * @param storyId           the story id.
+     * @param bookmarkedStories list of bookmarked stories ids.
      * @return if story bookmarked.
      */
-    public static boolean checkIfBookmarked(long storyId) {
-        long bookmarkedStoryCount = SQLite.select().from(BookmarkModel.class)
-                .where(BookmarkModel_Table.story_id.eq(storyId))
-                .count();
-        return bookmarkedStoryCount > 0;
+    public static boolean checkIfBookmarked(long storyId, List<Long> bookmarkedStories) {
+        if (bookmarkedStories == null) {
+            bookmarkedStories = Lists.newArrayList();
+            Cursor cursor = SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
+                    .query();
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    bookmarkedStories.add(cursor.getLong(0));
+                }
+                cursor.close();
+            }
+        }
+        return bookmarkedStories.contains(storyId);
     }
 
     /**

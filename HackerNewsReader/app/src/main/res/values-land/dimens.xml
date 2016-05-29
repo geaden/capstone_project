@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="story_detail_image_height">280dp</dimen>
+    <dimen name="story_detail_image_height">140dp</dimen>
 </resources>

@@ -38,6 +38,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
     public List<Story> getStories() {
         List<StoryModel> storyModels = SQLite.select()
                 .from(StoryModel.class)
+                .orderBy(StoryModel_Table.score, false)
                 .queryList();
 
         List<Story> stories = Lists.newArrayList();
@@ -64,6 +65,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
     public List<Comment> getComments(@NonNull String storyId) {
         List<CommentModel> commentModels = SQLite.select().from(CommentModel.class)
                 .where(CommentModel_Table.story_id.eq(Long.valueOf(storyId)))
+                .orderBy(CommentModel_Table.time, false)
                 .queryList();
 
         List<Comment> comments = Lists.newArrayList();
@@ -71,6 +73,13 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         for (CommentModel commentModel : commentModels) {
             comments.add(commentModel.getComment());
         }
+
+        StoryModel storyModel = SQLite.select().from(StoryModel.class)
+                .where(StoryModel_Table.id.eq(Long.valueOf(storyId))).querySingle();
+
+        // Update story model comments...
+        storyModel.comments = commentModels.size();
+        storyModel.save();
 
         return comments;
     }
@@ -107,7 +116,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
     public void bookmarkStory(@NonNull String storyId) {
         BookmarkModel bookmarkModel = new BookmarkModel();
         bookmarkModel.story = Long.valueOf(storyId);
-        bookmarkModel.insert();
+        bookmarkModel.save();
     }
 
     @Override
@@ -127,8 +136,11 @@ public class StoriesLocalDataSource implements StoriesDataSource {
 
     @Override
     public void deleteAllStories() {
+        // Refresh comments...
         SQLite.delete().from(CommentModel.class).query();
-        SQLite.delete().from(StoryModel.class).query();
-        SQLite.delete().from(BookmarkModel.class).query();
+        // Delete all stories that are not bookmarked...
+        SQLite.delete().from(StoryModel.class).where(StoryModel_Table.id.notIn(
+                SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
+        )).query();
     }
 }

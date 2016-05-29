@@ -14,6 +14,7 @@ import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.DateTime;
 
 import java.util.Date;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,6 +36,8 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
     private StoryLoader mStoryLoader;
 
     private LoaderManager mLoadManager;
+
+    private List<Long> mBookmarkedStories;
 
     @Nullable
     private String mStoryId;
@@ -99,7 +102,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
             mStoryDetailView.hideStoryTime();
         }
 
-        boolean bookmarked = Utils.checkIfBookmarked(story.getId());
+        boolean bookmarked = Utils.checkIfBookmarked(story.getId(), mBookmarkedStories);
 
         if (bookmarked) {
             mStoryDetailView.showStoryBookmarked();
@@ -112,7 +115,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
         if (storyImageUrl != null) {
             mStoryDetailView.showStoryImage(storyImageUrl);
         } else {
-            mStoryDetailView.showStoryImage(R.drawable.overlay_bg_bottom_up);
+            mStoryDetailView.showStoryImage(R.drawable.story_image_default);
         }
 
         mStoryDetailView.setLoadingIndicator(false);

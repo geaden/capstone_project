@@ -1,13 +1,16 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -43,6 +46,8 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.plus.Plus;
 
 import butterknife.Bind;
@@ -54,6 +59,13 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     private static final String CURRENT_FILTERING_KEY = "CURRENT_FILTERING_KEY";
     private static final int RC_SIGN_IN = 0;
     private static final int RC_GOOGLE_PLAY_SERVICE = 1;
+    private static final int HN_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
+    private static final String HN_PERMISSIONS_READ_CONTACTS_GRANTED
+            = "com.geaden.android.hackernewsreadr.app.READ_CONTACTS_GRANTED";
+    private static final String TASK_TAG_PERIODIC = "periodic_task";
+
+    // Every 12 hours. 12 h * 3600
+    private final static long HN_REFRESH_PERIOD = 12 * 3600;
 
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
@@ -80,12 +92,17 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     private Menu mMenu;
 
     private LoadBookmarksAsyncTask mLoadBookmarksTask;
+    private GcmNetworkManager mGcmNetworkManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.stories_act);
         ButterKnife.bind(this);
+
+        // [START get_gcm_network_manager]
+        mGcmNetworkManager = GcmNetworkManager.getInstance(this);
+        // [END get_gcm_network_manager]
 
         mStoriesRepository = ((StoriesApplication) getApplication()).getStoriesRepositoryComponent()
                 .getStoriesRepository();
@@ -149,6 +166,36 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
             mSignInPresenter = new SignInPresenter(mGoogleApiClient, this);
         }
 
+        // Request permissions
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_CONTACTS)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        HN_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                // HN_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+
+        startPeriodicTask();
+
         // Load previously saved state, if available.
         if (savedInstanceState != null) {
             StoriesFilterType currentFiltering =
@@ -157,10 +204,62 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         }
     }
 
+    public void startPeriodicTask() {
+
+        // [START start_periodic_task]
+        PeriodicTask task = new PeriodicTask.Builder()
+                .setService(StoriesPeriodicTaskService.class)
+                .setTag(TASK_TAG_PERIODIC)
+                .setPeriod(HN_REFRESH_PERIOD)
+                .build();
+
+        mGcmNetworkManager.schedule(task);
+        // [END start_periodic_task]
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case HN_PERMISSIONS_REQUEST_READ_CONTACTS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    Utils.saveStringToPreference(this, HN_PERMISSIONS_READ_CONTACTS_GRANTED, "true");
+
+                    silentSignIn();
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Utils.saveStringToPreference(this, HN_PERMISSIONS_READ_CONTACTS_GRANTED, "false");
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
 
+        String readContactsPermissionGranted = Utils.getStringFromPreference(this,
+                HN_PERMISSIONS_READ_CONTACTS_GRANTED);
+        if (readContactsPermissionGranted != null && readContactsPermissionGranted
+                .equals("true")) {
+            silentSignIn();
+        } else {
+            mSignInPresenter.signOut();
+        }
+    }
+
+    private void silentSignIn() {
         OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
@@ -181,6 +280,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
                 });
             }
         }
+
     }
 
     @Override
@@ -221,6 +321,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     /**
      * Builds API client with required Google API's enabled.
      */
+
     private void buildGoogleApiClient() {
         // Configure sign-in to request the user's ID, email address, and basic profile. ID and
         // basic profile are included in DEFAULT_SIGN_IN.

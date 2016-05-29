@@ -90,6 +90,7 @@ dependencies {
     // Google Play Services
     compile "com.google.android.gms:play-services-auth:$rootProject.ext.googlePlayServices"
     compile "com.google.android.gms:play-services-plus:$rootProject.ext.googlePlayServices"
+    compile "com.google.android.gms:play-services-gcm:$rootProject.ext.googlePlayServices"
 
     // Dependencies for local unit tests
     testCompile "junit:junit:$rootProject.ext.junitVersion"

@@ -43,4 +43,5 @@
     <dimen name="element_spacing_normal">8dp</dimen>
     <dimen name="content_padding_dialog">24dp</dimen>
     <dimen name="text_size_medium">14sp</dimen>
+    <dimen name="story_detail_content_width">600dp</dimen>
 </resources>

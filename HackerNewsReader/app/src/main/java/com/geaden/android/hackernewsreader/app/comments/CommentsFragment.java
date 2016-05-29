@@ -3,7 +3,9 @@ package com.geaden.android.hackernewsreader.app.comments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,6 +81,19 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
         ButterKnife.bind(this, root);
 
         mCommentsList.setAdapter(mListAdapter);
+
+        mSwipeRefreshLayout.setColorSchemeColors(
+                ContextCompat.getColor(getActivity(), R.color.colorPrimary),
+                ContextCompat.getColor(getActivity(), R.color.colorAccent),
+                ContextCompat.getColor(getActivity(), R.color.colorPrimaryDark));
+
+        // Pull-to-refresh
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mPresenter.start();
+            }
+        });
 
         return root;
     }
@@ -172,7 +187,7 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
             vh.commentAuthor.setText(comment.getAuthor());
             long now = new Date().getTime();
             vh.commentTime.setText(Utils.getRelativeTime(now, comment.getTime().getValue()));
-            vh.commentText.setText(comment.getText());
+            vh.commentText.setText(Html.fromHtml(comment.getText()));
 
             return rowView;
         }

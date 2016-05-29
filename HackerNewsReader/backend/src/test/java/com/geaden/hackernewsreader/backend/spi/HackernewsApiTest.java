@@ -3,7 +3,6 @@ package com.geaden.hackernewsreader.backend.spi;
 import com.geaden.hackernewsreader.backend.config.Constants;
 import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Story;
-import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.com.google.api.client.util.Lists;
@@ -86,11 +85,6 @@ public class HackernewsApiTest {
         Story story = hackernewsApi.getTopstory(1L);
         assertNotNull(story);
         assertEquals("foo", story.getTitle());
-    }
-
-    @Test(expected = NotFoundException.class)
-    public void testGetBookmarkedStories() throws Exception {
-        hackernewsApi.getBookmarkedStories(user);
     }
 
     @Test

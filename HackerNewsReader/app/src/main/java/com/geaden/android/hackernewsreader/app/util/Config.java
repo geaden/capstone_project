@@ -11,5 +11,5 @@ public final class Config {
 
     }
 
-    public static final String ROOT_URL = "http://10.0.2.2:8080/_ah/api/";
+    public static final String ROOT_URL = "https://hackernewsreader-1304.appspot.com/_ah/api/";
 }

@@ -74,7 +74,6 @@ public class SignInPresenter implements SignInContract.Presenter {
             }
             loadProfile(mAppProfile);
             mSignInView.saveAccount(mAppProfile.getEmail());
-            mSignInView.startLoadBookmarksTask();
             signedIn = true;
         } else {
             // Signed out, show unauthenticated UI.
@@ -103,6 +102,7 @@ public class SignInPresenter implements SignInContract.Presenter {
                                 }
                             }
                         }
+                        mSignInView.startLoadBookmarksTask();
                         showProfile(appProfile);
                     }
                 });
