@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+    <cron>
+        <url>/cron/stories</url>
+        <description>Retrieves stories from HN</description>
+        <schedule>every day 02:00</schedule>
+        <retry-parameters>
+            <min-backoff-seconds>2.5</min-backoff-seconds>
+            <max-doublings>3</max-doublings>
+        </retry-parameters>
+    </cron>
+</cronentries>

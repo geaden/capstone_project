@@ -14,15 +14,15 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>UploadtopStoriesServlet</servlet-name>
+        <servlet-name>UploadTopStoriesServlet</servlet-name>
         <servlet-class>com.geaden.hackernewsreader.backend.servlets.UploadTopstoriesServlet
         </servlet-class>
 
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>UploadtopStoriesServlet</servlet-name>
-        <url-pattern>/upload</url-pattern>
+        <servlet-name>UploadTopStoriesServlet</servlet-name>
+        <url-pattern>/cron/stories</url-pattern>
     </servlet-mapping>
 
     <!-- Configure Objectify Filter -->
@@ -37,6 +37,16 @@
     <listener>
         <listener-class>com.geaden.hackernewsreader.backend.service.OfyHelper</listener-class>
     </listener>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>cron</web-resource-name>
+            <url-pattern>/cron/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
