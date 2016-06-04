@@ -152,7 +152,7 @@ public class StoriesRepository implements StoriesDataSource {
 
             if (stories != null) {
                 for (Story bookmarkedStory : stories) {
-                    mStoriesLocalDataSource.bookmarkStory(Long.toString(bookmarkedStory.getId()));
+                    mStoriesLocalDataSource.addBookmark(Long.toString(bookmarkedStory.getId()));
                 }
             }
         } else {
@@ -254,15 +254,15 @@ public class StoriesRepository implements StoriesDataSource {
     }
 
     @Override
-    public void bookmarkStory(@NonNull String storyId) {
-        mStoriesLocalDataSource.bookmarkStory(storyId);
-        mStoriesRemoteDataSource.bookmarkStory(storyId);
+    public void addBookmark(@NonNull String storyId) {
+        mStoriesLocalDataSource.addBookmark(storyId);
+        mStoriesRemoteDataSource.addBookmark(storyId);
     }
 
     @Override
-    public void unbookmarkStory(@NonNull String storyId) {
-        mStoriesLocalDataSource.unbookmarkStory(storyId);
-        mStoriesRemoteDataSource.unbookmarkStory(storyId);
+    public void removeBookmark(@NonNull String storyId) {
+        mStoriesLocalDataSource.removeBookmark(storyId);
+        mStoriesRemoteDataSource.removeBookmark(storyId);
     }
 
     @Override

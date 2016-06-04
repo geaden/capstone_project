@@ -31,9 +31,9 @@ public interface StoriesDataSource {
 
     void saveStory(@NonNull Story story);
 
-    void bookmarkStory(@NonNull String storyId);
+    void addBookmark(@NonNull String storyId);
 
-    void unbookmarkStory(@NonNull String storyId);
+    void removeBookmark(@NonNull String storyId);
 
     void refreshStories();
 

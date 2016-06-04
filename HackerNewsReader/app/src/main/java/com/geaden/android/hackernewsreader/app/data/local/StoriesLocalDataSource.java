@@ -113,14 +113,14 @@ public class StoriesLocalDataSource implements StoriesDataSource {
     }
 
     @Override
-    public void bookmarkStory(@NonNull String storyId) {
+    public void addBookmark(@NonNull String storyId) {
         BookmarkModel bookmarkModel = new BookmarkModel();
         bookmarkModel.story = Long.valueOf(storyId);
         bookmarkModel.save();
     }
 
     @Override
-    public void unbookmarkStory(@NonNull String storyId) {
+    public void removeBookmark(@NonNull String storyId) {
         BookmarkModel bookmarkModel = SQLite.select().from(BookmarkModel.class)
                 .where(BookmarkModel_Table.story_id.eq(Long.valueOf(storyId))).querySingle();
         if (null != bookmarkModel) {
@@ -136,11 +136,9 @@ public class StoriesLocalDataSource implements StoriesDataSource {
 
     @Override
     public void deleteAllStories() {
-        // Refresh comments...
+        // Refresh comments
         SQLite.delete().from(CommentModel.class).query();
-        // Delete all stories that are not bookmarked...
-        SQLite.delete().from(StoryModel.class).where(StoryModel_Table.id.notIn(
-                SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
-        )).query();
+        // Delete all stories
+        SQLite.delete().from(StoryModel.class).query();
     }
 }

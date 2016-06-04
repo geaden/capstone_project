@@ -1,18 +1,22 @@
 package com.geaden.android.hackernewsreader.app.data.remote;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.geaden.android.hackernewsreader.app.AppConstants;
-import com.geaden.android.hackernewsreader.app.BuildConfig;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
+import com.geaden.android.hackernewsreader.app.gcmtask.StoryBookmarkTaskService;
 import com.geaden.android.hackernewsreader.app.util.Config;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.Hackernews;
 import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.OneoffTask;
+import com.google.android.gms.gcm.Task;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -29,9 +33,15 @@ import java.util.List;
  */
 public class StoriesRemoteDataSource implements StoriesDataSource {
 
-    private static Hackernews sApi;
+    private static final String HN_BOOKMARK_STORY_TASK =
+            "com.geaden.android.hackernewsreader.app.BOOKMARK_STORY_TASK";
+    private final Hackernews mAPi;
 
     private static final String TAG = "StoriesRemoteDS";
+
+    private final Context mContext;
+
+    private final GcmNetworkManager mGcmNetworkManager;
 
     private StoriesRemoteDataSource(Context context) {
         String emailAccount = Utils.getEmailAccount(context);
@@ -45,7 +55,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
                 // - 10.0.2.2 is localhost's IP address in Android emulator
                 // - turn off compression when running against local devappserver
                 .setRootUrl(Config.ROOT_URL);
-        if (BuildConfig.DEBUG) {
+        if (Config.ROOT_URL.equals("https://10.0.0.2/_ah/api/")) {
             apiBuilder.setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
                 @Override
                 public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest)
@@ -54,8 +64,14 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
                 }
             });
         }
-        apiBuilder.setApplicationName("hackernews");
-        sApi = apiBuilder.build();
+        apiBuilder.setApplicationName("hackernewsreader-api");
+        mAPi = apiBuilder.build();
+        mGcmNetworkManager = GcmNetworkManager.getInstance(context);
+        mContext = context;
+    }
+
+    public Hackernews getApi() {
+        return mAPi;
     }
 
     public static StoriesRemoteDataSource getInstance(Context context) {
@@ -66,7 +82,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     @Override
     public List<Story> getStories() {
         try {
-            return sApi.getTopstories().execute().getItems();
+            return mAPi.getTopstories().execute().getItems();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get stories from remote", e);
         }
@@ -77,7 +93,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     @Override
     public Story getStory(@NonNull String storyId) {
         try {
-            return sApi.getTopstory(Long.valueOf(storyId)).execute();
+            return mAPi.getTopstory(Long.valueOf(storyId)).execute();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get story from remote", e);
         }
@@ -88,7 +104,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     @Override
     public List<Comment> getComments(@NonNull String storyId) {
         try {
-            return sApi.getComments(Long.valueOf(storyId)).execute().getItems();
+            return mAPi.getComments(Long.valueOf(storyId)).execute().getItems();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get comments for story", e);
         }
@@ -103,14 +119,13 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     @Override
     public void saveStory(@NonNull Story story) {
         throw new UnsupportedOperationException("Remote save is not supported for a story!");
-
     }
 
     @Nullable
     @Override
     public List<Story> getBookmarkedStories(boolean update) {
         try {
-            sApi.getBookmarkedStories().execute().getItems();
+            mAPi.getBookmarkedStories().execute().getItems();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get bookmarked stories", e);
         }
@@ -118,21 +133,32 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     }
 
     @Override
-    public void bookmarkStory(@NonNull String storyId) {
-        try {
-            sApi.bookmarkStory(Long.valueOf(storyId));
-        } catch (IOException e) {
-            Log.e(TAG, "Unable to bookmark story", e);
-        }
+    public void addBookmark(@NonNull String storyId) {
+        startBookmarkTask(storyId, true);
     }
 
     @Override
-    public void unbookmarkStory(@NonNull String storyId) {
-        try {
-            sApi.unbookmarkStory(Long.valueOf(storyId));
-        } catch (IOException e) {
-            Log.e(TAG, "Unable to unbookmark story", e);
+    public void removeBookmark(@NonNull String storyId) {
+        startBookmarkTask(storyId, false);
+    }
+
+    private void startBookmarkTask(String storyId, boolean addBookmark) {
+        if (Utils.getEmailAccount(mContext) == null) {
+            // Bookmarks are stored locally only.
+            return;
         }
+        Bundle extras = new Bundle();
+        extras.putBoolean(StoryBookmarkTaskService.BOOKMARK_ACTION, addBookmark);
+        extras.putString(StoryBookmarkTaskService.EXTRA_STORY_ID, storyId);
+        OneoffTask oneoffTask = new OneoffTask.Builder()
+                .setExtras(extras)
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)  // Execute only if user is connected.
+                .setService(StoryBookmarkTaskService.class)
+                .setUpdateCurrent(true)
+                .setExecutionWindow(0L, 30L)    // Execute task withing first 30 seconds.
+                .setTag(HN_BOOKMARK_STORY_TASK)
+                .build();
+        mGcmNetworkManager.schedule(oneoffTask);
     }
 
     @Override

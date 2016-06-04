@@ -11,16 +11,11 @@ public class AppProfile {
     private String photoUrl;
     private String coverUrl;
 
-    public AppProfile(String displayName, String email, String photoUrl) {
+    public AppProfile(String displayName, String email, String photoUrl, String coverUrl) {
         this.displayName = displayName;
         this.email = email;
         this.photoUrl = photoUrl;
-    }
-
-    public AppProfile() {
-        displayName = null;
-        email = null;
-        photoUrl = null;
+        this.coverUrl = coverUrl;
     }
 
     public void setCoverUrl(String coverUrl) {

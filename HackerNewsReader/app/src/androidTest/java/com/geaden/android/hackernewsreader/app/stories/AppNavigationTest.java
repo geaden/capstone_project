@@ -84,7 +84,7 @@ public class AppNavigationTest {
     public void clickOnBookmarksOnlyNavigationItem_LoadsBookmarksOnly() {
 
 
-        mRepository.bookmarkStory("1");
+        mRepository.addBookmark("1");
 
         // Open Drawer to click on navigation.
         onView(withId(R.id.drawer_layout))

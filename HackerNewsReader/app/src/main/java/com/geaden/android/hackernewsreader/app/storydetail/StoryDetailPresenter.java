@@ -152,14 +152,14 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
     }
 
     @Override
-    public void bookmarkStory() {
-        mStoriesRepository.bookmarkStory(mStoryId);
+    public void addBookmark() {
+        mStoriesRepository.addBookmark(mStoryId);
         mStoryDetailView.showStoryBookmarked();
     }
 
     @Override
-    public void unbookmarkStory() {
-        mStoriesRepository.unbookmarkStory(mStoryId);
+    public void removeBookmark() {
+        mStoriesRepository.removeBookmark(mStoryId);
         mStoryDetailView.showStoryNotBookmarked();
     }
 

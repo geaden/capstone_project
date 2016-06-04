@@ -2,7 +2,6 @@ package com.geaden.android.hackernewsreader.app.signin;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
 
 import com.geaden.android.hackernewsreader.app.data.AppProfile;
 import com.google.android.gms.auth.api.Auth;
@@ -23,7 +22,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author Gennady Denisov
  */
-public class SignInPresenter implements SignInContract.Presenter {
+public class SignInPresenter implements SignInContract.Presenter,
+        ResultCallback<People.LoadPeopleResult> {
 
     @NonNull
     private SignInContract.View mSignInView;
@@ -33,7 +33,8 @@ public class SignInPresenter implements SignInContract.Presenter {
 
     private AppProfile mAppProfile;
 
-    public SignInPresenter(@NonNull GoogleApiClient googleApiClient, @NonNull SignInContract.View signInView) {
+    public SignInPresenter(@NonNull GoogleApiClient googleApiClient,
+                           @NonNull SignInContract.View signInView) {
         checkNotNull(googleApiClient, "googleApiClient cannot be null!");
         checkNotNull(signInView, "signInView cannot be null!");
         mGoogleApiClient = googleApiClient;
@@ -48,6 +49,7 @@ public class SignInPresenter implements SignInContract.Presenter {
 
     @Override
     public void signOut() {
+        mSignInView.saveAccount(null);
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
@@ -55,57 +57,53 @@ public class SignInPresenter implements SignInContract.Presenter {
                         hideProfile();
                     }
                 });
-        mSignInView.updateMenuItems(false);
-        mSignInView.saveAccount(null);
     }
 
     @Override
     public void handleSignIn(GoogleSignInResult result) {
-        boolean signedIn;
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
                 Uri photoUrl = acct.getPhotoUrl();
                 mAppProfile = new AppProfile(acct.getDisplayName(), acct.getEmail(), photoUrl != null ?
-                        photoUrl.toString() : null);
-            } else {
-                mAppProfile = new AppProfile();
+                        photoUrl.toString() : null, null);
             }
-            loadProfile(mAppProfile);
-            mSignInView.saveAccount(mAppProfile.getEmail());
-            signedIn = true;
+            Plus.PeopleApi.load(mGoogleApiClient, "me")
+                    .setResultCallback(this);
         } else {
             // Signed out, show unauthenticated UI.
             mSignInView.saveAccount(null);
             hideProfile();
-            signedIn = false;
         }
-        mSignInView.updateMenuItems(signedIn);
     }
 
-    @VisibleForTesting
-    void loadProfile(@NonNull final AppProfile appProfile) {
-        Plus.PeopleApi.load(mGoogleApiClient, "me")
-                .setResultCallback(new ResultCallback<People.LoadPeopleResult>() {
-                    @Override
-                    public void onResult(@NonNull People.LoadPeopleResult loadPeopleResult) {
-                        PersonBuffer personBuffer = loadPeopleResult.getPersonBuffer();
-                        if (personBuffer != null && personBuffer.getCount() > 0) {
-                            Person currentUser = personBuffer.get(0);
-                            personBuffer.release();
-                            Person.Cover cover = currentUser.getCover();
-                            if (cover != null) {
-                                Person.Cover.CoverPhoto coverPhoto = cover.getCoverPhoto();
-                                if (coverPhoto != null) {
-                                    appProfile.setCoverUrl(coverPhoto.getUrl());
-                                }
-                            }
-                        }
-                        mSignInView.startLoadBookmarksTask();
-                        showProfile(appProfile);
-                    }
-                });
+    @Override
+    public void loadProfile(AppProfile profile) {
+        if (profile != null) {
+            showProfile(profile);
+        } else {
+            hideProfile();
+        }
+    }
+
+    @Override
+    public void onResult(@NonNull People.LoadPeopleResult loadPeopleResult) {
+        PersonBuffer personBuffer = loadPeopleResult.getPersonBuffer();
+        if (personBuffer != null && personBuffer.getCount() > 0) {
+            Person currentUser = personBuffer.get(0);
+            personBuffer.release();
+            Person.Cover cover = currentUser.getCover();
+            if (cover != null) {
+                Person.Cover.CoverPhoto coverPhoto = cover.getCoverPhoto();
+                if (coverPhoto != null) {
+                    mAppProfile.setCoverUrl(coverPhoto.getUrl());
+                }
+            }
+        }
+        mSignInView.saveAccount(mAppProfile);
+        mSignInView.startLoadBookmarksTask();
+        loadProfile(mAppProfile);
     }
 
     private void showProfile(AppProfile profile) {
@@ -141,6 +139,8 @@ public class SignInPresenter implements SignInContract.Presenter {
         } else {
             mSignInView.hideCoverPhoto();
         }
+
+        mSignInView.updateMenuItems(true);
     }
 
     private void hideProfile() {
@@ -148,6 +148,8 @@ public class SignInPresenter implements SignInContract.Presenter {
         mSignInView.hideEmail();
         mSignInView.hidePhoto();
         mSignInView.hideCoverPhoto();
+
+        mSignInView.updateMenuItems(false);
     }
 
     @Override

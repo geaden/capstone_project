@@ -133,12 +133,12 @@ public class StoryDetailContract {
         /**
          * Bookmarks the story.
          */
-        void bookmarkStory();
+        void addBookmark();
 
         /**
          * Un-bookmarks the story.
          */
-        void unbookmarkStory();
+        void removeBookmark();
 
         /**
          * Shares a story.

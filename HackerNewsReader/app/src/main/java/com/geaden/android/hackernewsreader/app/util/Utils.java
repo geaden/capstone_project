@@ -23,7 +23,7 @@ import java.util.List;
  */
 public final class Utils {
 
-    private final static String PREFS_KEY_EMAIL = "email_account";
+    public final static String PREFS_KEY_EMAIL = "email_account";
 
     private Utils() {
 

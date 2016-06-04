@@ -175,9 +175,9 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
         boolean storyBookmarked = Utils.checkIfBookmarked(Long.valueOf(
                 getArguments().getString(EXTRA_STORY_ID)), mBookmarkedStorie);
         if (!storyBookmarked) {
-            mPresenter.bookmarkStory();
+            mPresenter.addBookmark();
         } else {
-            mPresenter.unbookmarkStory();
+            mPresenter.removeBookmark();
         }
     }
 

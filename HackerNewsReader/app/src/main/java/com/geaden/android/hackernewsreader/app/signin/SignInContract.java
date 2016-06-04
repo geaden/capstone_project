@@ -1,9 +1,11 @@
 package com.geaden.android.hackernewsreader.app.signin;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.geaden.android.hackernewsreader.app.BasePresenter;
 import com.geaden.android.hackernewsreader.app.BaseView;
+import com.geaden.android.hackernewsreader.app.data.AppProfile;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
 /**
@@ -14,13 +16,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 public interface SignInContract {
 
     interface View extends BaseView<Presenter> {
-        /**
-         * Shows signing progress.
-         *
-         * @param active if active.
-         */
-        void showSignInProgress(boolean active);
-
         /**
          * Shows user cover photo.
          *
@@ -73,11 +68,11 @@ public interface SignInContract {
         void updateMenuItems(boolean signedIn);
 
         /**
-         * Saves account email to preferences.
+         * Saves account profile to the preferences.
          *
-         * @param accountEmail user's email.
+         * @param appProfile {@link AppProfile} account profile.
          */
-        void saveAccount(String accountEmail);
+        void saveAccount(@Nullable AppProfile appProfile);
 
         /**
          * Loads bookmarks from backend.
@@ -96,6 +91,13 @@ public interface SignInContract {
          * Sign out.
          */
         void signOut();
+
+        /**
+         * Loads profile.
+         *
+         * @param profile
+         */
+        void loadProfile(@Nullable AppProfile profile);
 
         /**
          * Handle sign in intent.

@@ -1,4 +1,4 @@
-package com.geaden.android.hackernewsreader.app.stories;
+package com.geaden.android.hackernewsreader.app.gcmtask;
 
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
@@ -7,20 +7,22 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 
 /**
- * Periodically updates stories from API.
+ * Gcm Task Service to get bookmarks.
  *
  * @author Gennady Denisov
  */
-public class StoriesPeriodicTaskService extends GcmTaskService {
+public class LoadBookmarksTaskService extends GcmTaskService {
 
-    StoriesRepository mStoriesRepository;
+    private StoriesRepository mStoriesRepository;
 
     @Override
     public int onRunTask(TaskParams taskParams) {
-        mStoriesRepository = ((StoriesApplication) getApplication()).getStoriesRepositoryComponent()
+        mStoriesRepository = ((StoriesApplication) getApplication())
+                .getStoriesRepositoryComponent()
                 .getStoriesRepository();
-        mStoriesRepository.deleteAllStories();
-        mStoriesRepository.refreshStories();
+
+        mStoriesRepository.getBookmarkedStories(true);
+
         return GcmNetworkManager.RESULT_SUCCESS;
     }
 }

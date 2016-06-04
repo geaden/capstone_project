@@ -104,12 +104,12 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
     }
 
     @Override
-    public void bookmarkStory(@NonNull String storyId) {
+    public void addBookmark(@NonNull String storyId) {
 
     }
 
     @Override
-    public void unbookmarkStory(@NonNull String storyId) {
+    public void removeBookmark(@NonNull String storyId) {
 
     }
 

@@ -51,8 +51,8 @@ import static com.geaden.hackernewsreader.backend.service.OfyService.ofy;
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID,
                 Constants.API_EXPLORER_CLIENT_ID},
         audiences = {Constants.ANDROID_AUDIENCE},
-        description = "Conference Central API for creating and querying conferences," +
-                " and for creating and getting user Profiles"
+        description = "Hacker News Reader API to fetch top stories, store user profiles and " +
+                "bookmark stories"
 )
 public class HackernewsApi {
 

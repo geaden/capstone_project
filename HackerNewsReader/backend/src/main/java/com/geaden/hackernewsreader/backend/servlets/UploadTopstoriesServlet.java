@@ -81,7 +81,9 @@ public class UploadTopstoriesServlet extends HttpServlet {
                                         BoilerPipeServiceFactory.create();
                                 Content content = boilerpipeContentExtractionService.content(story.getUrl());
                                 story.setContent(content.getContent());
-                                story.setNoComments(story.getKids().size());
+                                if (story.getKids() != null) {
+                                    story.setNoComments(story.getKids().size());
+                                }
                                 story.setImageUrl(content.getImage());
                                 log.info(story.toString());
                             }

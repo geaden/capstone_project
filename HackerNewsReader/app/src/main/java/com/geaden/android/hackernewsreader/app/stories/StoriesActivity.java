@@ -1,14 +1,16 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
 import android.Manifest;
-import android.app.ProgressDialog;
+import android.app.AlarmManager;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -16,6 +18,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
@@ -31,12 +34,16 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.about.AboutActivity;
+import com.geaden.android.hackernewsreader.app.data.AppProfile;
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
+import com.geaden.android.hackernewsreader.app.gcmtask.LoadBookmarksTaskService;
+import com.geaden.android.hackernewsreader.app.gcmtask.StoryBookmarkTaskService;
 import com.geaden.android.hackernewsreader.app.settings.SettingsActivity;
 import com.geaden.android.hackernewsreader.app.signin.SignInContract;
 import com.geaden.android.hackernewsreader.app.signin.SignInPresenter;
 import com.geaden.android.hackernewsreader.app.util.ActivityUtils;
+import com.geaden.android.hackernewsreader.app.util.ProfileUtils;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -44,28 +51,32 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.OptionalPendingResult;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.PeriodicTask;
+import com.google.android.gms.gcm.Task;
 import com.google.android.gms.plus.Plus;
+
+import java.util.Calendar;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class StoriesActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
-        GoogleApiClient.ConnectionCallbacks, SignInContract.View {
+public class StoriesActivity extends AppCompatActivity implements
+        GoogleApiClient.OnConnectionFailedListener, SignInContract.View,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String CURRENT_FILTERING_KEY = "CURRENT_FILTERING_KEY";
     private static final int RC_SIGN_IN = 0;
     private static final int RC_GOOGLE_PLAY_SERVICE = 1;
     private static final int HN_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
-    private static final String HN_PERMISSIONS_READ_CONTACTS_GRANTED
-            = "com.geaden.android.hackernewsreadr.app.READ_CONTACTS_GRANTED";
     private static final String TASK_TAG_PERIODIC = "periodic_task";
 
-    // Every 12 hours. 12 h * 3600
-    private final static long HN_REFRESH_PERIOD = 12 * 3600;
+    // Refresh stories every 24 hours
+    private final static long HN_REFRESH_PERIOD = 24 * 60 * 60;
+
+    private static final String HN_LOAD_BOOKMARKS_TASK =
+            "com.geaden.android.hackernewsreader.app.LOAD_BOOKMARKS_TASK";
 
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
@@ -88,11 +99,10 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     private GoogleApiClient mGoogleApiClient;
     private NavigationViewHolder mNavViewHolder;
 
-    private ProgressDialog mProgressDialog;
     private Menu mMenu;
 
-    private LoadBookmarksAsyncTask mLoadBookmarksTask;
     private GcmNetworkManager mGcmNetworkManager;
+    private AlarmManager mAlarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +120,11 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         // Set up the toolbar
         setSupportActionBar(mToolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setTitle(R.string.top_stories_toolbar_title);
-        ab.setDisplayHomeAsUpEnabled(true);
+
+        if (ab != null) {
+            ab.setTitle(R.string.top_stories_toolbar_title);
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         // Set up the navigation drawer.
         mDrawerLayout.setStatusBarBackground(R.color.colorPrimaryDark);
@@ -164,37 +177,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
 
         if (checkGooglePlayServices()) {
             mSignInPresenter = new SignInPresenter(mGoogleApiClient, this);
+            startPeriodicTask();
         }
-
-        // Request permissions
-        // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_CONTACTS)) {
-
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_CONTACTS},
-                        HN_PERMISSIONS_REQUEST_READ_CONTACTS);
-
-                // HN_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
-
-        startPeriodicTask();
 
         // Load previously saved state, if available.
         if (savedInstanceState != null) {
@@ -206,15 +190,24 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
 
     public void startPeriodicTask() {
 
-        // [START start_periodic_task]
-        PeriodicTask task = new PeriodicTask.Builder()
-                .setService(StoriesPeriodicTaskService.class)
-                .setTag(TASK_TAG_PERIODIC)
-                .setPeriod(HN_REFRESH_PERIOD)
-                .build();
+        // Calculate flex time
+        long now = System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(now);
+        calendar.add(Calendar.DATE, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 6);
 
-        mGcmNetworkManager.schedule(task);
-        // [END start_periodic_task]
+        long flex = (calendar.getTimeInMillis() - now) / 1000L;
+
+        PeriodicTask periodicTask = new PeriodicTask.Builder()
+                .setTag(TASK_TAG_PERIODIC)
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
+                .setFlex(flex)
+                .setPeriod(HN_REFRESH_PERIOD)
+                .setService(StoryBookmarkTaskService.class)
+                .setUpdateCurrent(true)
+                .build();
+        mGcmNetworkManager.schedule(periodicTask);
     }
 
     @Override
@@ -227,15 +220,12 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
 
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    Utils.saveStringToPreference(this, HN_PERMISSIONS_READ_CONTACTS_GRANTED, "true");
-
-                    silentSignIn();
+                    mSignInPresenter.signIn();
 
                 } else {
 
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    Utils.saveStringToPreference(this, HN_PERMISSIONS_READ_CONTACTS_GRANTED, "false");
                 }
                 return;
             }
@@ -248,47 +238,19 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onStart() {
         super.onStart();
-
-        String readContactsPermissionGranted = Utils.getStringFromPreference(this,
-                HN_PERMISSIONS_READ_CONTACTS_GRANTED);
-        if (readContactsPermissionGranted != null && readContactsPermissionGranted
-                .equals("true")) {
-            silentSignIn();
-        } else {
-            mSignInPresenter.signOut();
-        }
-    }
-
-    private void silentSignIn() {
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if (opr.isDone()) {
-            // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
-            // and the GoogleSignInResult will be available instantly.
-            GoogleSignInResult result = opr.get();
-            mSignInPresenter.handleSignIn(result);
-        } else {
-            // Try to sign in asynchronously
-            // if user was already signed in.
-            if (Utils.getEmailAccount(this) != null) {
-                showSignInProgress(true);
-                opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
-                    @Override
-                    public void onResult(GoogleSignInResult googleSignInResult) {
-                        showSignInProgress(false);
-                        mSignInPresenter.handleSignIn(googleSignInResult);
-                    }
-                });
-            }
-        }
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mLoadBookmarksTask != null) {
-            mLoadBookmarksTask.cancel(true);
-            mLoadBookmarksTask = null;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(Utils.PREFS_KEY_EMAIL)) {
+            if (Utils.getEmailAccount(this) == null) {
+                mSignInPresenter.loadProfile(null);
+            }
         }
     }
 
@@ -300,12 +262,21 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.item_sign_in);
+        boolean signedIn = Utils.getEmailAccount(this) != null;
+        item.setTitle(signedIn ? R.string.signOut : R.string.signIn);
+        return true;
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case RC_GOOGLE_PLAY_SERVICE:
                 buildGoogleApiClient();
                 mStoriesPresenter.start();
+                startPeriodicTask();
                 break;
             case RC_SIGN_IN:
                 // Result returned from launching the Intent from
@@ -319,9 +290,8 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     /**
-     * Builds API client with required Google API's enabled.
+     * Builds API client with required Google's APIs enabled.
      */
-
     private void buildGoogleApiClient() {
         // Configure sign-in to request the user's ID, email address, and basic profile. ID and
         // basic profile are included in DEFAULT_SIGN_IN.
@@ -334,7 +304,6 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         // Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
-                .addConnectionCallbacks(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .addApi(Plus.API)
                 .build();
@@ -343,10 +312,16 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     protected void onResume() {
         super.onResume();
-        // Check Google Play Services are available.
         if (mSignInPresenter != null) {
             mSignInPresenter.start();
         }
+
+        AppProfile appProfile = ProfileUtils.getProfile(this);
+
+        mSignInPresenter.loadProfile(appProfile);
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -363,26 +338,42 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
             if (googleApiAvailability.isUserResolvableError(result)) {
                 googleApiAvailability.getErrorDialog(this, result, RC_GOOGLE_PLAY_SERVICE).show();
             } else {
-                // TODO: Display connection error dialog...
+                // No play services available... Just quit
+                finish();
             }
             return false;
         }
-
     }
 
     @Override
     public void startLoadBookmarksTask() {
-        if (mLoadBookmarksTask != null) {
-            mLoadBookmarksTask.cancel(true);
-        }
-        // Start task to load tasks from the background.
-        mLoadBookmarksTask = new LoadBookmarksAsyncTask();
-        mLoadBookmarksTask.execute();
+        OneoffTask oneoffTask = new OneoffTask.Builder()
+                .setService(LoadBookmarksTaskService.class)
+                .setUpdateCurrent(true)
+                .setExecutionWindow(0L, 30L)
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
+                .setTag(HN_LOAD_BOOKMARKS_TASK)
+                .build();
+        mGcmNetworkManager.schedule(oneoffTask);
     }
 
     @Override
-    public void saveAccount(String accountEmail) {
-        Utils.saveEmailAccount(this, accountEmail);
+    public void saveAccount(AppProfile appProfile) {
+        if (appProfile != null) {
+            Utils.saveEmailAccount(this, appProfile.getEmail());
+
+            Utils.saveStringToPreference(this, ProfileUtils.PREF_PROFILE_DISPLAY_NAME,
+                    appProfile.getDisplayName());
+
+            Utils.saveStringToPreference(this, ProfileUtils.PREF_PROFILE_PHOTO_URL,
+                    appProfile.getPhotoUrl());
+
+            Utils.saveStringToPreference(this, ProfileUtils.PREF_PROFILE_COVER_URL,
+                    appProfile.getCoverUrl());
+        } else {
+            Utils.saveEmailAccount(this, null);
+        }
+
     }
 
     @Override
@@ -390,6 +381,7 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         if (mMenu != null) {
             MenuItem signInItem = mMenu.findItem(R.id.item_sign_in);
             signInItem.setTitle(signedIn ? R.string.signOut : R.string.signIn);
+            invalidateOptionsMenu();
         }
     }
 
@@ -399,23 +391,15 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        mGoogleApiClient.connect();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (!connectionResult.hasResolution()) {
-//            GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(),
-//                    request_code).show();
+            GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(),
+                    RC_GOOGLE_PLAY_SERVICE).show();
             return;
         }
 
@@ -460,7 +444,43 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
                 if (emailAccount != null) {
                     mSignInPresenter.signOut();
                 } else {
-                    mSignInPresenter.signIn();
+                    // Request permissions
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.READ_CONTACTS)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Should we show an explanation?
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                                Manifest.permission.READ_CONTACTS)) {
+
+                            // Show an explanation to the user *asynchronously* -- don't block
+                            // this thread waiting for the user's response! After the user
+                            // sees the explanation, try again to request the permission.
+                            new AlertDialog.Builder(this)
+                                    .setTitle(R.string.permissions_read_contacts_title)
+                                    .setMessage(R.string.permissiona_read_contacts_text)
+                                    .setCancelable(false)
+                                    .setNeutralButton(android.R.string.ok, new Dialog.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                        }
+                                    }).create().show();
+                        } else {
+
+                            // No explanation needed, we can request the permission.
+
+                            ActivityCompat.requestPermissions(this,
+                                    new String[]{Manifest.permission.READ_CONTACTS},
+                                    HN_PERMISSIONS_REQUEST_READ_CONTACTS);
+
+                            // HN_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                            // app-defined int constant. The callback method gets the
+                            // result of the request.
+                        }
+                    } else {
+                        mSignInPresenter.signIn();
+                    }
                 }
                 return true;
             default:
@@ -516,22 +536,6 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
     public void startSignInIntent() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    public void showSignInProgress(boolean active) {
-        if (active) {
-            if (mProgressDialog == null) {
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setMessage(getString(R.string.loading));
-                mProgressDialog.setIndeterminate(true);
-            }
-            mProgressDialog.show();
-        } else {
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                mProgressDialog.hide();
-            }
-        }
     }
 
     @Override
@@ -614,35 +618,6 @@ public class StoriesActivity extends AppCompatActivity implements GoogleApiClien
             profileCoverPlaceholder = (ImageView) view.findViewById(R.id.profile_cover_image_placeholder);
             profileCoverPhoto = (ImageView) view.findViewById(R.id.profile_cover_image);
             profileExpand = (ImageView) view.findViewById(R.id.expand_account_box_indicator);
-        }
-    }
-
-    /**
-     * Simple async task to load bookmarks in the background.
-     */
-    private class LoadBookmarksAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            mStoriesRepository.getBookmarkedStories(true);
-
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            mLoadBookmarksTask = this;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            mLoadBookmarksTask = null;
-        }
-
-        @Override
-        protected void onCancelled() {
-            mLoadBookmarksTask = null;
         }
     }
 }

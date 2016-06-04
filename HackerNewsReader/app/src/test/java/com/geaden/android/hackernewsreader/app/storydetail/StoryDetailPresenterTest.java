@@ -97,9 +97,9 @@ public class StoryDetailPresenterTest {
                 mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
         mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
 
-        mStoryDetailPresenter.bookmarkStory();
+        mStoryDetailPresenter.addBookmark();
 
-        verify(mStoriesRepository).bookmarkStory(Long.toString(mStory.getId()));
+        verify(mStoriesRepository).addBookmark(Long.toString(mStory.getId()));
         verify(mStoryView).showStoryBookmarked();
     }
 
@@ -109,9 +109,9 @@ public class StoryDetailPresenterTest {
                 mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
         mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
 
-        mStoryDetailPresenter.unbookmarkStory();
+        mStoryDetailPresenter.removeBookmark();
 
-        verify(mStoriesRepository).unbookmarkStory(Long.toString(mStory.getId()));
+        verify(mStoriesRepository).removeBookmark(Long.toString(mStory.getId()));
         verify(mStoryView, atLeast(2)).showStoryNotBookmarked();
     }
 

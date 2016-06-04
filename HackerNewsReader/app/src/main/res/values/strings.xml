@@ -48,4 +48,6 @@
     ]]></string>
     <string name="about_title">About</string>
     <string name="about_licenses">Open Source Licenses</string>
+    <string name="permissions_read_contacts_title">Read contacts required</string>
+    <string name="permissiona_read_contacts_text">In order to properly add bookmarks you need to grant read contacts permission</string>
 </resources>

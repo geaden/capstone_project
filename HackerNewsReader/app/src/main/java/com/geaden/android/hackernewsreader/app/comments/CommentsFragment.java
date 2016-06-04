@@ -187,7 +187,7 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
             vh.commentAuthor.setText(comment.getAuthor());
             long now = new Date().getTime();
             vh.commentTime.setText(Utils.getRelativeTime(now, comment.getTime().getValue()));
-            vh.commentText.setText(Html.fromHtml(comment.getText()));
+            vh.commentText.setText(Html.fromHtml(comment.getText() != null ? comment.getText() : ""));
 
             return rowView;
         }
