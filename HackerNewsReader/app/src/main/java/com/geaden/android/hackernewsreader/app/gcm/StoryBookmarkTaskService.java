@@ -1,4 +1,4 @@
-package com.geaden.android.hackernewsreader.app.gcmtask;
+package com.geaden.android.hackernewsreader.app.gcm;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -30,14 +30,13 @@ public class StoryBookmarkTaskService extends GcmTaskService {
         Bundle extras = taskParams.getExtras();
         String storyId = extras.getString(EXTRA_STORY_ID);
         boolean addBookmark = taskParams.getExtras().getBoolean(BOOKMARK_ACTION);
-        Hackernews api = StoriesRemoteDataSource.getInstance(this).getApi();
+        Hackernews api = StoriesRemoteDataSource.newInstance(this).getApi();
         boolean isSuccess;
         if (addBookmark) {
             // Add story bookmark
             try {
                 Log.d(TAG, "Adding bookmark");
-                api.bookmarkStory(Long.valueOf(storyId));
-                isSuccess = true;
+                isSuccess = api.addBookmark(Long.valueOf(storyId)).execute().getResult();
             } catch (IOException e) {
                 Log.e(TAG, "Unable to add a bookmark", e);
                 isSuccess = false;
@@ -46,8 +45,7 @@ public class StoryBookmarkTaskService extends GcmTaskService {
             // Remove story bookmark
             try {
                 Log.d(TAG, "Removing bookmark");
-                api.unbookmarkStory(Long.valueOf(storyId));
-                isSuccess = true;
+                isSuccess = api.removeBookmark(Long.valueOf(storyId)).execute().getResult();
             } catch (IOException e) {
                 Log.e(TAG, "Unable to remove a bookmark", e);
                 isSuccess = false;

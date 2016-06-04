@@ -1,6 +1,7 @@
 package com.geaden.android.hackernewsreader.app.storydetail;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +28,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.comments.CommentsActivity;
 import com.geaden.android.hackernewsreader.app.util.Utils;
@@ -227,10 +231,23 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
     public void showStoryImage(@NonNull String imageUrl) {
         Glide.with(getActivity())
                 .load(imageUrl)
+                .asBitmap()
                 .centerCrop()
                 .placeholder(R.drawable.story_image_default)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(mStoryImage);
+                .into(new BitmapImageViewTarget(mStoryImage) {
+                    @Override
+                    public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                        super.onResourceReady(resource, glideAnimation);
+                        Palette p = new Palette.Builder(resource)
+                                .maximumColorCount(12)
+                                .generate();
+                        Palette.Swatch swatch = p.getMutedSwatch();
+                        if (swatch != null) {
+                            mStoryTitle.setTextColor(swatch.getTitleTextColor());
+                        }
+                    }
+                });
     }
 
     @Override

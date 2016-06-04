@@ -91,30 +91,30 @@ public class HackernewsApiTest {
     public void testGetStoryComments() throws Exception {
         Story story = ofy().load().type(Story.class).id(1L).now();
         dumpComments(story);
-        List<Comment> comments = hackernewsApi.getStoryComments(1L);
+        List<Comment> comments = hackernewsApi.getComments(1L);
         assertEquals(3, comments.size());
-        comments = hackernewsApi.getStoryComments(2L);
+        comments = hackernewsApi.getComments(2L);
         assertEquals(0, comments.size());
     }
 
     @Test
     public void testBookmarkStory() throws Exception {
-        HackernewsApi.WrappedBoolean wrappedBoolean = hackernewsApi.bookmarkStory(user, 1L);
+        HackernewsApi.WrappedBoolean wrappedBoolean = hackernewsApi.addBookmark(user, 1L);
         assertTrue(wrappedBoolean.getResult());
-        Collection<Story> bookmarks = hackernewsApi.getBookmarkedStories(user);
+        Collection<Story> bookmarks = hackernewsApi.getBookmarks(user);
         assertEquals(1, bookmarks.size());
     }
 
     @Test
     public void testUnbookmarkStory() throws Exception {
-        HackernewsApi.WrappedBoolean wrappedBoolean = hackernewsApi.unbookmarkStory(user, 1L);
+        HackernewsApi.WrappedBoolean wrappedBoolean = hackernewsApi.removeBookmark(user, 1L);
         assertFalse(wrappedBoolean.getResult());
         // Bookmark a story...
-        hackernewsApi.bookmarkStory(user, 1L);
+        hackernewsApi.addBookmark(user, 1L);
         // And then un-bookmark it...
-        wrappedBoolean = hackernewsApi.unbookmarkStory(user, 1L);
+        wrappedBoolean = hackernewsApi.removeBookmark(user, 1L);
         assertTrue(wrappedBoolean.getResult());
-        Collection<Story> bookmarks = hackernewsApi.getBookmarkedStories(user);
+        Collection<Story> bookmarks = hackernewsApi.getBookmarks(user);
         assertEquals(0, bookmarks.size());
     }
 

@@ -114,6 +114,8 @@ public class StoriesRepository implements StoriesDataSource {
             stories = mStoriesRemoteDataSource.getStories();
             // We copy the data to the device so we don't need to query the network next time
             saveStoriesInLocalDataSource(stories);
+            // Load stories with right order
+            stories = mStoriesLocalDataSource.getStories();
         }
 
         processLoadedStories(stories);
@@ -131,6 +133,7 @@ public class StoriesRepository implements StoriesDataSource {
             saveCommentInLocalDataSource(storyId, comments);
         }
 
+        notifyContentObserver();
         return comments;
     }
 
@@ -143,12 +146,12 @@ public class StoriesRepository implements StoriesDataSource {
     }
 
     @Override
-    public List<Story> getBookmarkedStories(boolean update) {
+    public List<Story> getBookmarks(boolean update) {
 
         List<Story> stories;
 
         if (update) {
-            stories = mStoriesRemoteDataSource.getBookmarkedStories(update);
+            stories = mStoriesRemoteDataSource.getBookmarks(update);
 
             if (stories != null) {
                 for (Story bookmarkedStory : stories) {
@@ -156,9 +159,11 @@ public class StoriesRepository implements StoriesDataSource {
                 }
             }
         } else {
-            stories = mStoriesLocalDataSource.getBookmarkedStories(update);
+            stories = mStoriesLocalDataSource.getBookmarks(update);
         }
 
+        // Notify about loaded bookmarks
+        notifyContentObserver();
         return stories;
     }
 

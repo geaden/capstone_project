@@ -77,9 +77,11 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         StoryModel storyModel = SQLite.select().from(StoryModel.class)
                 .where(StoryModel_Table.id.eq(Long.valueOf(storyId))).querySingle();
 
-        // Update story model comments...
-        storyModel.comments = commentModels.size();
-        storyModel.save();
+        if (storyModel.comments != commentModels.size()) {
+            // Update story model comments...
+            storyModel.comments = commentModels.size();
+            storyModel.save();
+        }
 
         return comments;
     }
@@ -98,7 +100,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
 
     @Nullable
     @Override
-    public List<Story> getBookmarkedStories(boolean update) {
+    public List<Story> getBookmarks(boolean update) {
         List<StoryModel> storyModels = SQLite.select().from(StoryModel.class)
                 .where(StoryModel_Table.id.in(
                         SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
@@ -139,6 +141,9 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         // Refresh comments
         SQLite.delete().from(CommentModel.class).query();
         // Delete all stories
-        SQLite.delete().from(StoryModel.class).query();
+        // Delete all stories that are not bookmarked...
+        SQLite.delete().from(StoryModel.class).where(StoryModel_Table.id.notIn(
+                SQLite.select(BookmarkModel_Table.story_id).from(BookmarkModel.class)
+        )).query();
     }
 }

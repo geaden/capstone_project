@@ -99,7 +99,7 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
 
     @Nullable
     @Override
-    public List<Story> getBookmarkedStories(boolean update) {
+    public List<Story> getBookmarks(boolean update) {
         return null;
     }
 

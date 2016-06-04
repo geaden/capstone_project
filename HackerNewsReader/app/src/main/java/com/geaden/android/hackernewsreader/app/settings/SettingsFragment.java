@@ -1,8 +1,11 @@
 package com.geaden.android.hackernewsreader.app.settings;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 
@@ -20,10 +23,12 @@ import com.google.android.gms.common.api.Status;
  *
  * @author Gennady Denisov
  */
-public class SettingsFragment extends PreferenceFragment implements GoogleApiClient.OnConnectionFailedListener {
+public class SettingsFragment extends PreferenceFragment implements
+        GoogleApiClient.OnConnectionFailedListener, Preference.OnPreferenceChangeListener {
 
     private Preference mRevokePreference;
     private GoogleApiClient mGoogleApiClient;
+    private SwitchPreference mNotifyPreference;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,12 @@ public class SettingsFragment extends PreferenceFragment implements GoogleApiCli
                 return true;
             }
         });
+
+        mNotifyPreference = (SwitchPreference) findPreference(getString(R.string.pref_key_notify));
+        boolean ifNotify = Utils.checkNotify(getActivity());
+        mNotifyPreference.setDefaultValue(ifNotify);
+        updateNotify(ifNotify);
+        mNotifyPreference.setOnPreferenceChangeListener(this);
     }
 
     private void revokeAccess() {
@@ -72,7 +83,28 @@ public class SettingsFragment extends PreferenceFragment implements GoogleApiCli
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        if (preference instanceof SwitchPreference) {
+            boolean value = (Boolean) newValue;
+            updateNotify(value);
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            SharedPreferences.Editor spe = sp.edit();
+            spe.putBoolean(preference.getKey(), value);
+            spe.apply();
+        }
+        return true;
+    }
 
+    private void updateNotify(boolean ifNotify) {
+        if (ifNotify) {
+            mNotifyPreference.setSummary(getString(R.string.pref_notify_disable));
+        } else {
+            mNotifyPreference.setSummary(getString(R.string.pref_notify_enable));
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // Do nothing...
     }
 }

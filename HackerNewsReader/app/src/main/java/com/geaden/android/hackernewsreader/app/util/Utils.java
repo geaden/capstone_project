@@ -1,11 +1,9 @@
 package com.geaden.android.hackernewsreader.app.util;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
 
 import com.geaden.android.hackernewsreader.app.R;
@@ -140,21 +138,13 @@ public final class Utils {
     }
 
     /**
-     * Displays error dialog when a network error occurs. Exits application when user confirms
-     * dialog.
+     * Check if notifications are allowed by user.
      *
-     * @param context the Context to build {@link AlertDialog}.
+     * @param context the {@link Context} to get {@link PreferenceManager} for.
+     * @return if notifications are turned on. By default always true.
      */
-    public static void displayNetworkErrorMessage(Context context) {
-        new AlertDialog.Builder(
-                context).setTitle(R.string.api_error_title)
-                .setMessage(R.string.api_error_message)
-                .setCancelable(false)
-                .setPositiveButton(R.string.close, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                System.exit(0);
-                            }
-                        }
-                ).create().show();
+    public static boolean checkNotify(Context context) {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        return pref.getBoolean(context.getString(R.string.pref_key_notify), true);
     }
 }

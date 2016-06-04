@@ -3,7 +3,6 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-
     <dimen name="no_data_icon_size">48dp</dimen>
 
     <!-- Story grid -->
@@ -27,6 +26,8 @@
     <dimen name="story_detail_title_padding">16dp</dimen>
     <dimen name="story_detail_margin">48dp</dimen>
     <dimen name="bookmark_icon_margin">4dp</dimen>
+    <dimen name="story_detail_text_size">16sp</dimen>
+    <dimen name="story_detail_content_width">600dp</dimen>
 
     <!-- Comments -->
     <dimen name="item_comment_padding">16dp</dimen>
@@ -39,9 +40,11 @@
     <dimen name="navview_start_padding">16dp</dimen>
     <dimen name="navview_header_bottom_padding">16dp</dimen>
     <dimen name="navdrawer_chosen_account_height">160dp</dimen>
+
+    <!-- Misc -->
     <dimen name="keyline_1">16dp</dimen>
     <dimen name="element_spacing_normal">8dp</dimen>
     <dimen name="content_padding_dialog">24dp</dimen>
     <dimen name="text_size_medium">14sp</dimen>
-    <dimen name="story_detail_content_width">600dp</dimen>
+
 </resources>

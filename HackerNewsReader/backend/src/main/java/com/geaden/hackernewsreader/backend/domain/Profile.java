@@ -59,7 +59,7 @@ public class Profile {
      *
      * @return an immutable copy of bookmarked stories.
      */
-    public List<String> getBookmarkedStoriesKeys() {
+    public List<String> getBookmarksKeys() {
         return ImmutableList.copyOf(bookmarkedStoriesKeys);
     }
 

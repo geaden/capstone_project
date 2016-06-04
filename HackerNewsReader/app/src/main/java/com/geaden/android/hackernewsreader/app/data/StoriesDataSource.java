@@ -27,7 +27,7 @@ public interface StoriesDataSource {
     void saveComment(@NonNull String storyId, @NonNull Comment comment);
 
     @Nullable
-    List<Story> getBookmarkedStories(boolean update);
+    List<Story> getBookmarks(boolean update);
 
     void saveStory(@NonNull Story story);
 

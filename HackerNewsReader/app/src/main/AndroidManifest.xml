@@ -55,7 +55,7 @@
 
         <!-- [START manifest_service] -->
         <service
-            android:name=".gcmtask.StoriesPeriodicTaskService"
+            android:name=".gcm.StoriesPeriodicTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>
@@ -63,7 +63,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".gcmtask.StoryBookmarkTaskService"
+            android:name=".gcm.StoryBookmarkTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>
@@ -71,7 +71,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".gcmtask.LoadBookmarksTaskService"
+            android:name=".gcm.LoadBookmarksTaskService"
             android:exported="true"
             android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
             <intent-filter>

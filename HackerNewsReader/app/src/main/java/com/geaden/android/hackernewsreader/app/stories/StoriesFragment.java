@@ -90,7 +90,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     }
 
     @Override
-    @SuppressWarnings("")
+    @SuppressWarnings("ResourceType")
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.stories_frag_menu, menu);
@@ -171,7 +171,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mPresenter.loadStories(false);
+                mPresenter.loadStories(true);
             }
         });
 

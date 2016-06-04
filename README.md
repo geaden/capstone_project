@@ -2,6 +2,8 @@
 
 Capstone project for Udacity Android Nanodegree.
 
+[Trello Board](https://trello.com/b/BPasjtiY)
+
 ## Links
 
 - [Google Services Quickstart](https://github.com/googlesamples/google-services)

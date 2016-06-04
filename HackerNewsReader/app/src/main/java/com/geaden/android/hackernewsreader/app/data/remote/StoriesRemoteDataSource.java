@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.geaden.android.hackernewsreader.app.AppConstants;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
-import com.geaden.android.hackernewsreader.app.gcmtask.StoryBookmarkTaskService;
+import com.geaden.android.hackernewsreader.app.gcm.StoryBookmarkTaskService;
 import com.geaden.android.hackernewsreader.app.util.Config;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.Hackernews;
@@ -35,7 +35,8 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
 
     private static final String HN_BOOKMARK_STORY_TASK =
             "com.geaden.android.hackernewsreader.app.BOOKMARK_STORY_TASK";
-    private final Hackernews mAPi;
+
+    private Hackernews mAPi;
 
     private static final String TAG = "StoriesRemoteDS";
 
@@ -44,7 +45,14 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     private final GcmNetworkManager mGcmNetworkManager;
 
     private StoriesRemoteDataSource(Context context) {
+        buildApi(context);
+        mGcmNetworkManager = GcmNetworkManager.getInstance(context);
+        mContext = context;
+    }
+
+    private void buildApi(Context context) {
         String emailAccount = Utils.getEmailAccount(context);
+        Log.d(TAG, "Email account: " + emailAccount);
         GoogleAccountCredential credential = GoogleAccountCredential.usingAudience(context,
                 AppConstants.AUDIENCE);
         credential.setSelectedAccountName(emailAccount);
@@ -66,15 +74,13 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
         }
         apiBuilder.setApplicationName("hackernewsreader-api");
         mAPi = apiBuilder.build();
-        mGcmNetworkManager = GcmNetworkManager.getInstance(context);
-        mContext = context;
     }
 
     public Hackernews getApi() {
         return mAPi;
     }
 
-    public static StoriesRemoteDataSource getInstance(Context context) {
+    public static StoriesRemoteDataSource newInstance(Context context) {
         return new StoriesRemoteDataSource(context);
     }
 
@@ -123,9 +129,11 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
 
     @Nullable
     @Override
-    public List<Story> getBookmarkedStories(boolean update) {
+    public List<Story> getBookmarks(boolean update) {
+        // Call this just to reinitialize mApi
+        buildApi(mContext);
         try {
-            mAPi.getBookmarkedStories().execute().getItems();
+            return mAPi.getBookmarks().execute().getItems();
         } catch (IOException e) {
             Log.e(TAG, "Unable to get bookmarked stories", e);
         }
@@ -155,7 +163,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)  // Execute only if user is connected.
                 .setService(StoryBookmarkTaskService.class)
                 .setUpdateCurrent(true)
-                .setExecutionWindow(0L, 30L)    // Execute task withing first 30 seconds.
+                .setExecutionWindow(0L, 10L)    // Execute task withing first 10 seconds.
                 .setTag(HN_BOOKMARK_STORY_TASK)
                 .build();
         mGcmNetworkManager.schedule(oneoffTask);

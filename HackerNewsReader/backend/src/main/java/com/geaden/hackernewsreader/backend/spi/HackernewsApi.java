@@ -217,7 +217,7 @@ public class HackernewsApi {
             path = "topstories/{id}/comments",
             httpMethod = ApiMethod.HttpMethod.GET
     )
-    public List<Comment> getStoryComments(@Named("id") final long storyId) throws NotFoundException {
+    public List<Comment> getComments(@Named("id") final long storyId) throws NotFoundException {
         final List<Comment> comments = Lists.newArrayList();
         ObjectifyService.run(new VoidWork() {
             @Override
@@ -236,17 +236,18 @@ public class HackernewsApi {
     }
 
     /**
-     * Returns a collection of bookmarked by a user stories from HN.
+     * Returns a collection of bookmarks from HN.
      *
      * @param user the user to get bookmarks for.
      * @return a {@link Collection} of {@link Story} the user bookmarked.
      */
     @ApiMethod(
-            name = "getBookmarkedStories",
+            name = "getBookmarks",
             path = "bookmarks",
             httpMethod = ApiMethod.HttpMethod.GET
     )
-    public Collection<Story> getBookmarkedStories(final User user) throws UnauthorizedException, NotFoundException {
+    public Collection<Story> getBookmarks(final User user) throws UnauthorizedException,
+            NotFoundException {
         if (null == user) {
             throw new UnauthorizedException("Authorization required.");
         }
@@ -255,7 +256,7 @@ public class HackernewsApi {
         if (null == profile) {
             throw new NotFoundException("Profile doesn't exist.");
         }
-        List<String> bookmarkedStoriesKeys = profile.getBookmarkedStoriesKeys();
+        List<String> bookmarkedStoriesKeys = profile.getBookmarksKeys();
         List<Key<Story>> bookmarkedStories = Lists.newArrayList();
         for (String bookmarkedStoryKey : bookmarkedStoriesKeys) {
             bookmarkedStories.add(Key.<Story>create(bookmarkedStoryKey));
@@ -275,11 +276,12 @@ public class HackernewsApi {
      * @throws ForbiddenException
      */
     @ApiMethod(
-            name = "bookmarkStory",
+            name = "addBookmark",
             path = "topstories/{id}/bookmark",
             httpMethod = ApiMethod.HttpMethod.POST
     )
-    public WrappedBoolean bookmarkStory(final User user, @Named("id") final long storyId) throws UnauthorizedException,
+    public WrappedBoolean addBookmark(final User user, @Named("id") final long storyId)
+            throws UnauthorizedException,
             NotFoundException, ConflictException, ForbiddenException {
         if (null == user) {
             throw new UnauthorizedException("Authorization required.");
@@ -298,7 +300,7 @@ public class HackernewsApi {
                 // Bookmarking happens here.
                 Profile profile = getProfileFromUser(user, userId);
                 String storyKeyString = KeyFactory.keyToString(storyKey.getRaw());
-                if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
+                if (profile.getBookmarksKeys().contains(storyKeyString)) {
                     return new TxResult<>(new ConflictException("You have already bookmarked this story"));
                 } else {
                     // Keep track of all bookmarks
@@ -329,11 +331,11 @@ public class HackernewsApi {
      * @throws ForbiddenException
      */
     @ApiMethod(
-            name = "unbookmarkStory",
+            name = "removeBookmark",
             path = "topstories/{id}/bookmark",
             httpMethod = ApiMethod.HttpMethod.DELETE
     )
-    public WrappedBoolean unbookmarkStory(final User user, @Named("id") final long storyId) throws
+    public WrappedBoolean removeBookmark(final User user, @Named("id") final long storyId) throws
             UnauthorizedException, NotFoundException, ConflictException, ForbiddenException {
         // If not signed in, throw a 401 error.
         if (null == user) {
@@ -353,7 +355,7 @@ public class HackernewsApi {
                 // Un-bookmarking the story.
                 Profile profile = getProfileFromUser(user, userId);
                 String storyKeyString = KeyFactory.keyToString(storyKey.getRaw());
-                if (profile.getBookmarkedStoriesKeys().contains(storyKeyString)) {
+                if (profile.getBookmarksKeys().contains(storyKeyString)) {
                     // Get bookmark & delete
                     Bookmark bookmarkToDelete = ofy().load().type(Bookmark.class).ancestor(profile)
                             .filter("story", storyKey)

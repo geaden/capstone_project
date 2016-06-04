@@ -168,6 +168,7 @@ public class StoriesPresenter implements StoriesContract.Presenter,
         } else {
             showFilteredStories();
         }
+        mStoriesView.setLoadingIndicator(false);
 
     }
 

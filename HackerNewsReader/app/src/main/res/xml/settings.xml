@@ -6,4 +6,10 @@
         android:summary="@string/pref_revoke_access"
         android:title="@string/pref_revoke_access_title" />
 
+    <!-- Notify about new stories -->
+    <SwitchPreference
+        android:key="@string/pref_key_notify"
+        android:summary="@string/pref_notify_summary"
+        android:title="@string/pref_notify_title" />
+
 </PreferenceScreen>

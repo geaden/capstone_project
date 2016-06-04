@@ -102,6 +102,8 @@ public class AppNavigationTest {
 
     @Test
     public void clickOnSettingsNavigationItem_OpensSettings() {
+        boolean before = Utils.checkNotify(InstrumentationRegistry.getTargetContext());
+
         // Close the drawer
         onView(withId(R.id.drawer_layout)).perform(close());
 
@@ -122,6 +124,13 @@ public class AppNavigationTest {
 
         onData(PreferenceMatchers.withTitle(R.string.pref_revoke_access_title))
                 .check(matches(not(isEnabled())));
+
+        // Check switching notification will change if notification needed.
+        onData(PreferenceMatchers.withTitle(R.string.pref_notify_title)).perform(click());
+        boolean after = Utils.checkNotify(InstrumentationRegistry.getTargetContext());
+
+        assertThat(before, is(not(after)));
+
     }
 
     @Test

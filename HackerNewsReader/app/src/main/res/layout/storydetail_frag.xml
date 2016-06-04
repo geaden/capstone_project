@@ -66,6 +66,7 @@
                 android:lineSpacingMultiplier="0.9"
                 android:paddingBottom="@dimen/story_detail_title_padding"
                 android:paddingLeft="@dimen/story_detail_margin"
+                android:paddingRight="@dimen/story_detail_title_padding"
                 android:paddingTop="@dimen/story_detail_title_padding"
                 android:textColor="#fff"
                 android:textStyle="bold"

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="story_content_line_spacing_multiplier" format="float" type="fraction">1.25</item>
+</resources>
