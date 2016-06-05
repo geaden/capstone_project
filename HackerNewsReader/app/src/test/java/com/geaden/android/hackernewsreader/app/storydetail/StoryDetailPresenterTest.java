@@ -20,6 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Date;
 
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
@@ -62,7 +63,7 @@ public class StoryDetailPresenterTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         PowerMockito.mockStatic(Utils.class);
-        PowerMockito.when(Utils.checkIfBookmarked(anyLong())).thenReturn(false);
+        PowerMockito.when(Utils.checkIfBookmarked(anyLong(), anyList())).thenReturn(false);
         mStory = createStory();
     }
 

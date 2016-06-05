@@ -17,8 +17,7 @@ public final class AppConstants {
      *
      * @see <a href="https://developers.google.com/console">https://developers.google.com/console</a>
      */
-    // TODO: Put into build config
-    public static final String WEB_CLIENT_ID = "872003973467-qv1du1k3aneqkd1ug0cj5vktbuejbng8.apps.googleusercontent.com";
+    public static final String WEB_CLIENT_ID = BuildConfig.GOOGLE_WEB_CLIENT_ID;
     /**
      * The audience is defined by the web client id, not the Android client id.
      */

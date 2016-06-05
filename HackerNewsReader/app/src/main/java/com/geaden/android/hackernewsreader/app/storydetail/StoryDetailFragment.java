@@ -242,9 +242,9 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
                         Palette p = new Palette.Builder(resource)
                                 .maximumColorCount(12)
                                 .generate();
-                        Palette.Swatch swatch = p.getMutedSwatch();
+                        Palette.Swatch swatch = p.getVibrantSwatch();
                         if (swatch != null) {
-                            mStoryTitle.setTextColor(swatch.getTitleTextColor());
+                            mStoryTitle.setTextColor(swatch.getBodyTextColor());
                         }
                     }
                 });

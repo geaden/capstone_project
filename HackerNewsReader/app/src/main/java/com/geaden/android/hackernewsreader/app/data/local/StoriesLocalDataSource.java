@@ -77,7 +77,7 @@ public class StoriesLocalDataSource implements StoriesDataSource {
         StoryModel storyModel = SQLite.select().from(StoryModel.class)
                 .where(StoryModel_Table.id.eq(Long.valueOf(storyId))).querySingle();
 
-        if (storyModel.comments != commentModels.size()) {
+        if (storyModel != null && storyModel.comments != commentModels.size()) {
             // Update story model comments...
             storyModel.comments = commentModels.size();
             storyModel.save();

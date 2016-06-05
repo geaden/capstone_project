@@ -57,3 +57,9 @@ ext {
     rulesVersion = '0.5'
     espressoVersion = '2.2.2'
 }
+
+task checkAll {
+    description = 'Runs all the tests, including unit and android tests.'
+}
+
+checkAll.dependsOn ':app:check', ':backend:check', ':app:connectedMockDebugAndroidTest'

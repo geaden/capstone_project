@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
@@ -34,22 +35,28 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
     @Override
     public int onRunTask(TaskParams taskParams) {
         Log.d(TAG, "Loading stories periodic task.");
-        List<Story> currentStories = mStoriesRepository.getStories();
-        long latestStoryId = getLatestStoryId(currentStories);
         // Inject stories repository
         mStoriesRepository = ((StoriesApplication) getApplication())
                 .getStoriesRepositoryComponent()
                 .getStoriesRepository();
+
+        List<Story> currentStories = mStoriesRepository.getStories();
+        long latestStoryId = getLatestStoryId(currentStories);
         mStoriesRepository.deleteAllStories();
         List<Story> updatedStories = mStoriesRepository.getStories();
         long updatedStoryId = getLatestStoryId(updatedStories);
-        if (latestStoryId != updatedStoryId) {
+        if (Utils.getEmailAccount(this) != null) {
+            // Request bookmarks only if user is signed in.
+            mStoriesRepository.getBookmarks(true);
+        }
+
+        if (latestStoryId != updatedStoryId) {  // Very rough assumption about new content...
             // Notify user about updates...
             if (Utils.checkNotify(this)) {
                 showNotification();
             }
         }
-        mStoriesRepository.getBookmarks(true);
+
         return GcmNetworkManager.RESULT_SUCCESS;
     }
 
@@ -71,7 +78,8 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
     private void showNotification() {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.drawable.ic_notify)
+                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                         .setContentTitle(getString(R.string.app_name))
                         .setAutoCancel(true)
                         .setContentText(getString(R.string.notif_text_new_stories_available));

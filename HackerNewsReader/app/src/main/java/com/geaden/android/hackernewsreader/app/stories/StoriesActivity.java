@@ -38,7 +38,7 @@ import com.geaden.android.hackernewsreader.app.data.AppProfile;
 import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.gcm.LoadBookmarksTaskService;
-import com.geaden.android.hackernewsreader.app.gcm.StoryBookmarkTaskService;
+import com.geaden.android.hackernewsreader.app.gcm.StoriesPeriodicTaskService;
 import com.geaden.android.hackernewsreader.app.settings.SettingsActivity;
 import com.geaden.android.hackernewsreader.app.signin.SignInContract;
 import com.geaden.android.hackernewsreader.app.signin.SignInPresenter;
@@ -204,7 +204,7 @@ public class StoriesActivity extends AppCompatActivity implements
                 .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
                 .setFlex(flex)
                 .setPeriod(HN_REFRESH_PERIOD)
-                .setService(StoryBookmarkTaskService.class)
+                .setService(StoriesPeriodicTaskService.class)
                 .setUpdateCurrent(true)
                 .build();
         mGcmNetworkManager.schedule(periodicTask);

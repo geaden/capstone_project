@@ -28,6 +28,10 @@ android {
         }
     }
 
+    buildTypes.each {
+        it.buildConfigField 'String', 'GOOGLE_WEB_CLIENT_ID', GoogleWebClientId
+    }
+
     // If you need to add more flavors, consider using flavor dimensions.
     productFlavors {
         mock {

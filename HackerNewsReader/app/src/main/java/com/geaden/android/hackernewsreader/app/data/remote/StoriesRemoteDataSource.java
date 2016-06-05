@@ -160,7 +160,7 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
         extras.putString(StoryBookmarkTaskService.EXTRA_STORY_ID, storyId);
         OneoffTask oneoffTask = new OneoffTask.Builder()
                 .setExtras(extras)
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)  // Execute only if user is connected.
+                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)  // Execute only if user is connected to network.
                 .setService(StoryBookmarkTaskService.class)
                 .setUpdateCurrent(true)
                 .setExecutionWindow(0L, 10L)    // Execute task withing first 10 seconds.

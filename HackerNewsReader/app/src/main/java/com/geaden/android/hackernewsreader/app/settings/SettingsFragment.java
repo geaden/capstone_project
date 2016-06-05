@@ -67,6 +67,7 @@ public class SettingsFragment extends PreferenceFragment implements
         mNotifyPreference = (SwitchPreference) findPreference(getString(R.string.pref_key_notify));
         boolean ifNotify = Utils.checkNotify(getActivity());
         mNotifyPreference.setDefaultValue(ifNotify);
+        mNotifyPreference.setChecked(ifNotify);
         updateNotify(ifNotify);
         mNotifyPreference.setOnPreferenceChangeListener(this);
     }
