@@ -337,7 +337,7 @@ public class HackernewsApi {
     )
     public WrappedBoolean removeBookmark(final User user, @Named("id") final long storyId) throws
             UnauthorizedException, NotFoundException, ConflictException, ForbiddenException {
-        // If not signed in, throw a 401 error.
+        // If not signed in, throw a 401 setError.
         if (null == user) {
             throw new UnauthorizedException("Authorization required.");
         }

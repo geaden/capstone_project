@@ -6,6 +6,7 @@ import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerPipeServiceFactory;
 import com.geaden.hackernewsreader.backend.boilerpipe.BoilerpipeContentExtractionService;
+import com.geaden.hackernewsreader.backend.config.Constants;
 import com.geaden.hackernewsreader.backend.domain.Comment;
 import com.geaden.hackernewsreader.backend.domain.Content;
 import com.geaden.hackernewsreader.backend.domain.Story;
@@ -34,16 +35,17 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.geaden.hackernewsreader.backend.service.OfyService.ofy;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,7 @@ import static org.mockito.Mockito.when;
  * @author Gennady Denisov
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FirebaseFactory.class, BoilerPipeServiceFactory.class})
+@PrepareForTest({FirebaseFactory.class, BoilerPipeServiceFactory.class, UploadTopstoriesServlet.SemaphoreFactory.class})
 public class UploadTopstoriesServletTest {
 
     private final LocalServiceTestHelper helper =
@@ -89,6 +91,9 @@ public class UploadTopstoriesServletTest {
     PrintWriter writer;
 
     @Mock
+    Semaphore semaphore;
+
+    @Mock
     private DataSnapshot commentSnapshot;
 
     @Captor
@@ -102,9 +107,11 @@ public class UploadTopstoriesServletTest {
         helper.setUp();
         session = ObjectifyService.begin();
         MockitoAnnotations.initMocks(this);
-        PowerMockito.mockStatic(FirebaseFactory.class, BoilerPipeServiceFactory.class);
+        PowerMockito.mockStatic(FirebaseFactory.class, BoilerPipeServiceFactory.class,
+                UploadTopstoriesServlet.SemaphoreFactory.class);
         PowerMockito.when(FirebaseFactory.create(anyString())).thenReturn(firebase);
         PowerMockito.when(BoilerPipeServiceFactory.create()).thenReturn(boilerpipeContentExtractionService);
+        PowerMockito.when(UploadTopstoriesServlet.SemaphoreFactory.create()).thenReturn(semaphore);
         when(boilerpipeContentExtractionService.content(anyString())).thenReturn(content);
         when(firebase.limitToFirst(anyInt())).thenReturn(query);
         // Mock child
@@ -155,37 +162,36 @@ public class UploadTopstoriesServletTest {
     @Test
     public void testDoGet() throws Exception {
         when(response.getWriter()).thenReturn(writer);
-        uploadTopstoriesServlet.doGet(request, response);
-        verify(query).addValueEventListener(eventListenerArgumentCaptor.capture());
 
-        when(snapshot.getChildren()).thenReturn(Lists.newArrayList(snapshot));
-        eventListenerArgumentCaptor.getValue().onDataChange(snapshot);
-        verify(firebase).addListenerForSingleValueEvent(eventListenerArgumentCaptor.capture());
+        List<DataSnapshot> children = Lists.newArrayList();
+        int i = 0;
+        while (i < Constants.NUMBER_OF_STORIES) {
+            children.add(snapshot);
+            i++;
+        }
+
+        when(snapshot.getChildren()).thenReturn(children);
 
         when(snapshot.getValue(Story.class)).thenReturn(dummyStory);
-        eventListenerArgumentCaptor.getValue().onDataChange(snapshot);
-
-        Story story = ofy().load().key(Key.create(Story.class, dummyStory.getId())).now();
-        assertNotNull(story);
-
-        // We actually listening for comments...
-        verify(firebase, atLeast(3)).addListenerForSingleValueEvent(eventListenerArgumentCaptor.capture());
 
         when(commentSnapshot.getValue(Comment.class))
                 .thenReturn(createDummyComment("111"))
                 .thenReturn(createDummyComment("222"))
                 .thenReturn(createDummyComment("333"));
 
-        // Capture arguments for each comment
-        for (String key : story.getKids()) {
-            eventListenerArgumentCaptor.getValue().onDataChange(commentSnapshot);
-        }
+        uploadTopstoriesServlet.doGet(request, response);
+        verify(semaphore).acquireUninterruptibly();
+        verify(query).addListenerForSingleValueEvent(eventListenerArgumentCaptor.capture());
 
-        for (String commentId : new String[]{"111", "222", "333"}) {
-            Key<Comment> commentKey = Key.create(Key.create(Story.class, story.getId()),
-                    Comment.class, Long.valueOf(commentId));
-            Comment comment = ofy().load().key(commentKey).now();
-            assertNotNull(comment);
-        }
+        eventListenerArgumentCaptor.getValue().onDataChange(snapshot);
+        verify(firebase, times(Constants.NUMBER_OF_STORIES))
+                .addListenerForSingleValueEvent(eventListenerArgumentCaptor.capture());
+
+        eventListenerArgumentCaptor.getValue().onDataChange(snapshot);
+
+        // We actually listening for comments...
+        verify(firebase, times(Constants.NUMBER_OF_STORIES + 3))
+                .addListenerForSingleValueEvent(eventListenerArgumentCaptor.capture());
+
     }
 }
