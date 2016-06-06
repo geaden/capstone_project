@@ -13,7 +13,7 @@
         android:background="?colorPrimary"
         android:contentDescription="@string/navview_header_default_image_content_description"
         android:paddingBottom="@dimen/navdrawer_logo_vertical_padding"
-        android:paddingRight="@dimen/navdrawer_logo_padding_right"
+        android:paddingEnd="@dimen/navdrawer_logo_padding_end"
         android:paddingTop="@dimen/navdrawer_logo_vertical_padding"
         android:scaleType="fitEnd" />
 
@@ -29,8 +29,8 @@
         android:id="@+id/chosen_account_content_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/keyline_1"
-        android:paddingRight="@dimen/keyline_1"
+        android:paddingEnd="@dimen/keyline_1"
+        android:paddingStart="@dimen/keyline_1"
         android:paddingTop="32dp">
 
         <com.geaden.android.hackernewsreader.app.util.BezelImageView
@@ -47,8 +47,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="@dimen/navview_start_padding"
             android:layout_marginStart="@dimen/navview_start_padding"
             android:paddingBottom="@dimen/navview_header_bottom_padding"
             android:scaleType="center"
@@ -60,10 +58,8 @@
             style="@style/TextAppearance.AppCompat.Body1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/profile_photo"
             android:layout_alignParentBottom="true"
             android:layout_alignStart="@id/profile_photo"
-            android:layout_toLeftOf="@id/expand_account_box_indicator"
             android:layout_toStartOf="@id/expand_account_box_indicator"
             android:ellipsize="end"
             android:maxLines="1"
@@ -78,9 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@id/profile_email_text"
-            android:layout_alignLeft="@id/profile_photo"
             android:layout_alignStart="@id/profile_photo"
-            android:layout_toLeftOf="@id/expand_account_box_indicator"
             android:layout_toStartOf="@id/expand_account_box_indicator"
             android:ellipsize="end"
             android:maxLines="1"

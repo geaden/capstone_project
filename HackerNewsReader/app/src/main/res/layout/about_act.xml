@@ -36,8 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/element_spacing_normal"
                 android:paddingBottom="@dimen/element_spacing_normal"
-                android:paddingLeft="@dimen/content_padding_dialog"
-                android:paddingRight="@dimen/content_padding_dialog"
+                android:paddingStart="@dimen/content_padding_dialog"
+                android:paddingEnd="@dimen/content_padding_dialog"
                 android:paddingTop="@dimen/element_spacing_normal"
                 android:textSize="@dimen/text_size_medium"
                 tools:text="@string/about_main" />

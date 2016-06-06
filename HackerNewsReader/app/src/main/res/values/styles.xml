@@ -25,8 +25,8 @@
         <item name="android:textSize">@dimen/text_size_medium</item>
         <item name="android:textColor">@color/colorAccent</item>
         <item name="android:background">?attr/selectableItemBackground</item>
-        <item name="android:paddingLeft">@dimen/content_padding_dialog</item>
-        <item name="android:paddingRight">@dimen/content_padding_dialog</item>
+        <item name="android:paddingStart">@dimen/content_padding_dialog</item>
+        <item name="android:paddingEnd">@dimen/content_padding_dialog</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:gravity">center_vertical</item>
     </style>
