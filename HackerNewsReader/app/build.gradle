@@ -5,6 +5,15 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    signingConfigs {
+        release {
+            storeFile file("../hackernewkeystore.jks")
+            storePassword System.getenv("JKS_PASS")
+            keyAlias "hackernewsreader"
+            keyPassword System.getenv("ALIAS_PASS")
+        }
+    }
+
     defaultConfig {
         applicationId "com.geaden.android.hackernewsreader.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -13,6 +22,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+
+        signingConfig signingConfigs.release
     }
     buildTypes {
         debug {
