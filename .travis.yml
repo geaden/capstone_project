@@ -44,4 +44,4 @@ before_script:
   - android-wait-for-emulator
 
 script:
-  - cd HackerNewsReader && ./gradlew clean checkAll -PdisablePreDex
+  - cd HackerNewsReader && ./gradlew clean checkAll -PdisablePreDex -PGoogleWebClientId=${GOOGLE_WEB_CLIENT_ID}
