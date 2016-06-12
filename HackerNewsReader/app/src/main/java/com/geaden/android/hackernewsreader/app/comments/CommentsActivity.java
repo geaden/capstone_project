@@ -9,7 +9,7 @@ import android.support.v7.widget.Toolbar;
 
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
-import com.geaden.android.hackernewsreader.app.data.CommentsLoader;
+import com.geaden.android.hackernewsreader.app.data.LoaderProvider;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.util.ActivityUtils;
 
@@ -66,12 +66,13 @@ public class CommentsActivity extends AppCompatActivity {
         }
 
         // Create the presenter
-        CommentsLoader commentsLoader = new CommentsLoader(getApplicationContext(), storyId,
-                mStoriesRepository);
+        LoaderProvider loaderProvider = new LoaderProvider(getApplicationContext());
 
         mCommentsPresenter = new CommentsPresenter(
-                commentsLoader,
+                storyId,
+                loaderProvider,
                 getSupportLoaderManager(),
+                mStoriesRepository,
                 commentsFragment
         );
     }

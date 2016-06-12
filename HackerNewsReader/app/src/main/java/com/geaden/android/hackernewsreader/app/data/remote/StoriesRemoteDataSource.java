@@ -3,7 +3,6 @@ package com.geaden.android.hackernewsreader.app.data.remote;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.geaden.android.hackernewsreader.app.AppConstants;
@@ -84,37 +83,50 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
         return new StoriesRemoteDataSource(context);
     }
 
-    @Nullable
     @Override
-    public List<Story> getStories() {
+    public void getStories(@NonNull GetStoriesCallback callback) {
+        List<Story> stories = null;
         try {
-            return mAPi.getTopstories().execute().getItems();
+            stories = mAPi.getTopstories().execute().getItems();
+            callback.onStoriesLoaded(stories);
         } catch (IOException e) {
             Log.e(TAG, "Unable to get stories from remote", e);
+            callback.onDataNotAvailable();
         }
-        return null;
     }
 
-    @Nullable
     @Override
-    public Story getStory(@NonNull String storyId) {
+    public void getStory(@NonNull String storyId, @NonNull GetStoryCallback callback) {
         try {
-            return mAPi.getTopstory(Long.valueOf(storyId)).execute();
+            Story story = mAPi.getTopstory(Long.valueOf(storyId)).execute();
+            callback.onStoryLoaded(story);
         } catch (IOException e) {
             Log.e(TAG, "Unable to get story from remote", e);
+            callback.onDataNotAvailable();
         }
-        return null;
     }
 
-    @Nullable
     @Override
-    public List<Comment> getComments(@NonNull String storyId) {
+    public void getComments(@NonNull String storyId, @NonNull GetCommentsCallback callback) {
         try {
-            return mAPi.getComments(Long.valueOf(storyId)).execute().getItems();
+            List<Comment> comments = mAPi.getComments(Long.valueOf(storyId)).execute().getItems();
+            callback.onCommentsLoaded(comments);
         } catch (IOException e) {
             Log.e(TAG, "Unable to get comments for story", e);
+            callback.onDataNotAvailable();
         }
-        return null;
+    }
+
+    @Override
+    public void getBookmarks(@NonNull GetBookmarksCallback callback) {
+        // Call this just to reinitialize mApi
+        buildApi(mContext);
+        try {
+            List<Story> bookmarks = mAPi.getBookmarks().execute().getItems();
+            callback.onBookmarksLoaded(bookmarks);
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to get bookmarked stories", e);
+        }
     }
 
     @Override
@@ -125,19 +137,6 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
     @Override
     public void saveStory(@NonNull Story story) {
         throw new UnsupportedOperationException("Remote save is not supported for a story!");
-    }
-
-    @Nullable
-    @Override
-    public List<Story> getBookmarks(boolean update) {
-        // Call this just to reinitialize mApi
-        buildApi(mContext);
-        try {
-            return mAPi.getBookmarks().execute().getItems();
-        } catch (IOException e) {
-            Log.e(TAG, "Unable to get bookmarked stories", e);
-        }
-        return null;
     }
 
     @Override
@@ -167,11 +166,6 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
                 .setTag(HN_BOOKMARK_STORY_TASK)
                 .build();
         mGcmNetworkManager.schedule(oneoffTask);
-    }
-
-    @Override
-    public void refreshStories() {
-        // no-op
     }
 
     @Override

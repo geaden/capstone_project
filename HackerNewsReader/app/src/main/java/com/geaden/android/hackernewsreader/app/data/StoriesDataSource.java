@@ -1,7 +1,6 @@
 package com.geaden.android.hackernewsreader.app.data;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
@@ -15,27 +14,46 @@ import java.util.List;
  */
 public interface StoriesDataSource {
 
-    @Nullable
-    List<Story> getStories();
+    interface DataCallback {
 
-    @Nullable
-    Story getStory(@NonNull String storyId);
+        void onDataNotAvailable();
+    }
 
-    @Nullable
-    List<Comment> getComments(@NonNull String storyId);
+    interface GetStoriesCallback extends DataCallback {
+
+        void onStoriesLoaded(List<Story> stories);
+    }
+
+    interface GetStoryCallback extends DataCallback {
+
+        void onStoryLoaded(Story story);
+    }
+
+    interface GetCommentsCallback extends DataCallback {
+
+        void onCommentsLoaded(List<Comment> comments);
+    }
+
+    interface GetBookmarksCallback {
+
+        void onBookmarksLoaded(List<Story> bookmarks);
+    }
+
+    void getStories(@NonNull GetStoriesCallback callback);
+
+    void getStory(@NonNull String storyId, @NonNull GetStoryCallback callback);
+
+    void getComments(@NonNull String storyId, @NonNull GetCommentsCallback callback);
 
     void saveComment(@NonNull String storyId, @NonNull Comment comment);
 
-    @Nullable
-    List<Story> getBookmarks(boolean update);
+    void getBookmarks(@NonNull GetBookmarksCallback callback);
 
     void saveStory(@NonNull Story story);
 
     void addBookmark(@NonNull String storyId);
 
     void removeBookmark(@NonNull String storyId);
-
-    void refreshStories();
 
     void deleteAllStories();
 }

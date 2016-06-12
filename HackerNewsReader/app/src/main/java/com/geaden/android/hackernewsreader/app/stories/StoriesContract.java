@@ -1,12 +1,11 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import com.geaden.android.hackernewsreader.app.BasePresenter;
 import com.geaden.android.hackernewsreader.app.BaseView;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
-
-import java.util.List;
 
 /**
  * This interface specifies the contract between the view and the presenter.
@@ -27,9 +26,19 @@ public class StoriesContract {
         /**
          * Show loaded stories in UI.
          *
-         * @param stories list of loaded stories.
+         * @param stories cursor with loaded stories.
          */
-        void showStories(List<Story> stories);
+        void showStories(Cursor stories);
+
+        /**
+         * Method to display label for bookmarks.
+         */
+        void showBookmarksFilterLabel();
+
+        /**
+         * Method to display label when all stories are shown.
+         */
+        void showAllFilterLabel();
 
         /**
          * Shows story details by provided id of the story.
@@ -52,7 +61,7 @@ public class StoriesContract {
         /**
          * Shows message if no bookmarked stories available.
          */
-        void showNoBookmarkedStories();
+        void showNoBookmarks();
 
     }
 
@@ -85,13 +94,13 @@ public class StoriesContract {
          *
          * @param requestType the filtering type.
          */
-        void setFiltering(StoriesFilterType requestType);
+        void setFiltering(StoriesFilter requestType);
 
         /**
          * Getter for currently set filtering.
          *
          * @return the filtering.
          */
-        StoriesFilterType getFiltering();
+        StoriesFilter getFiltering();
     }
 }

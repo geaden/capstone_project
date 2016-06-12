@@ -1,10 +1,9 @@
 package com.geaden.android.hackernewsreader.app.comments;
 
+import android.database.Cursor;
+
 import com.geaden.android.hackernewsreader.app.BasePresenter;
 import com.geaden.android.hackernewsreader.app.BaseView;
-import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
-
-import java.util.List;
 
 /**
  * This specifies the contract between the view and the presenter.
@@ -21,13 +20,13 @@ public class CommentsContract {
          */
         void setLoadingIndicator(boolean active);
 
-        void showComments(List<Comment> comments);
+        void showComments(Cursor data);
 
         void showNoComments();
 
     }
 
     interface Presenter extends BasePresenter {
-        void loadComments(String storyId);
+        void loadComments(String storyId, boolean forceUpdate);
     }
 }

@@ -34,7 +34,7 @@ public class CommentsLoader extends AsyncTaskLoader<List<Comment>> {
 
     @Override
     public List<Comment> loadInBackground() {
-        return mRepository.getComments(mStoryId);
+        return null; //mRepository.getComments(mStoryId);
     }
 
     @Override

@@ -13,7 +13,6 @@ import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.stories.StoriesActivity;
-import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -39,23 +38,24 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
         mStoriesRepository = ((StoriesApplication) getApplication())
                 .getStoriesRepositoryComponent()
                 .getStoriesRepository();
+        // TODO: Fix me...
 
-        List<Story> currentStories = mStoriesRepository.getStories();
-        long latestStoryId = getLatestStoryId(currentStories);
-        mStoriesRepository.deleteAllStories();
-        List<Story> updatedStories = mStoriesRepository.getStories();
-        long updatedStoryId = getLatestStoryId(updatedStories);
-        if (Utils.getEmailAccount(this) != null) {
-            // Request bookmarks only if user is signed in.
-            mStoriesRepository.getBookmarks(true);
-        }
-
-        if (latestStoryId != updatedStoryId) {  // Very rough assumption about new content...
-            // Notify user about updates...
-            if (Utils.checkNotify(this)) {
-                showNotification();
-            }
-        }
+//        List<Story> currentStories = mStoriesRepository.getStories();
+//        long latestStoryId = getLatestStoryId(currentStories);
+//        mStoriesRepository.deleteAllStories();
+//        List<Story> updatedStories = mStoriesRepository.getStories();
+//        long updatedStoryId = getLatestStoryId(updatedStories);
+//        if (Utils.getEmailAccount(this) != null) {
+//            // Request bookmarks only if user is signed in.
+//            mStoriesRepository.getBookmarks(true);
+//        }
+//
+//        if (latestStoryId != updatedStoryId) {  // Very rough assumption about new content...
+//            // Notify user about updates...
+//            if (Utils.checkNotify(this)) {
+//                showNotification();
+//            }
+//        }
 
         return GcmNetworkManager.RESULT_SUCCESS;
     }

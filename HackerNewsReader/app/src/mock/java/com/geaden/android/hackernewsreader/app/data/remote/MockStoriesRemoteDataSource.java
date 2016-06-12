@@ -1,7 +1,6 @@
 package com.geaden.android.hackernewsreader.app.data.remote;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
@@ -67,10 +66,25 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
 
     }
 
-    @Nullable
     @Override
-    public List<Comment> getComments(@NonNull String storyId) {
-        return COMMENTS_SERVICE_DATA.get(storyId);
+    public void getStories(@NonNull GetStoriesCallback callback) {
+        callback.onStoriesLoaded(Lists.newArrayList(STORIES_SERVICE_DATA.values()));
+    }
+
+    @Override
+    public void getStory(@NonNull String storyId, @NonNull GetStoryCallback callback) {
+        callback.onStoryLoaded(STORIES_SERVICE_DATA.get(storyId));
+
+    }
+
+    @Override
+    public void getComments(@NonNull String storyId, @NonNull GetCommentsCallback callback) {
+        callback.onCommentsLoaded(COMMENTS_SERVICE_DATA.get(storyId));
+    }
+
+    @Override
+    public void getBookmarks(@NonNull GetBookmarksCallback callback) {
+        callback.onBookmarksLoaded(null);
     }
 
     @Override
@@ -79,28 +93,9 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
 
     }
 
-    @Nullable
-    @Override
-    public List<Story> getStories() {
-        return Lists.newArrayList(STORIES_SERVICE_DATA.values());
-    }
-
-    @Nullable
-    @Override
-    public Story getStory(@NonNull String storyId) {
-        Story story = STORIES_SERVICE_DATA.get(storyId);
-        return story;
-    }
-
     @Override
     public void saveStory(@NonNull Story story) {
 
-    }
-
-    @Nullable
-    @Override
-    public List<Story> getBookmarks(boolean update) {
-        return null;
     }
 
     @Override
@@ -110,11 +105,6 @@ public class MockStoriesRemoteDataSource implements StoriesDataSource {
 
     @Override
     public void removeBookmark(@NonNull String storyId) {
-
-    }
-
-    @Override
-    public void refreshStories() {
 
     }
 

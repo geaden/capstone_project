@@ -1,30 +1,29 @@
 package com.geaden.android.hackernewsreader.app.comments;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.geaden.android.hackernewsreader.app.R;
+import com.geaden.android.hackernewsreader.app.util.DataUtils;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Comment;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Displays list of {@link Comment}s for a story.
@@ -53,7 +52,7 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mListAdapter = new CommentsAdapter(new ArrayList<Comment>(0));
+        mListAdapter = new CommentsAdapter(getActivity(), null, 0);
     }
 
     @Override
@@ -116,12 +115,10 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
     }
 
     @Override
-    public void showComments(List<Comment> comments) {
-        mListAdapter.replaceData(comments);
-
+    public void showComments(Cursor data) {
+        mListAdapter.swapCursor(data);
         mCommentsList.setVisibility(View.VISIBLE);
         mNoCommentsView.setVisibility(View.GONE);
-
     }
 
     @Override
@@ -136,60 +133,56 @@ public class CommentsFragment extends Fragment implements CommentsContract.View 
         mPresenter = presenter;
     }
 
-    public static class CommentsAdapter extends BaseAdapter {
+    public static class CommentsAdapter extends CursorAdapter {
 
-        private List<Comment> mComments;
-
-        public CommentsAdapter(List<Comment> comments) {
-            setList(comments);
-        }
-
-        public void replaceData(List<Comment> comments) {
-            setList(comments);
-            notifyDataSetChanged();
-        }
-
-        private void setList(List<Comment> comments) {
-            mComments = checkNotNull(comments);
+        public CommentsAdapter(Context context, Cursor c, int flags) {
+            super(context, c, flags);
         }
 
         @Override
-        public int getCount() {
-            return mComments.size();
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            View view = inflater.inflate(R.layout.item_comment, parent, false);
+            ViewHolder vh = new ViewHolder(view);
+            view.setTag(vh);
+            return view;
         }
 
         @Override
-        public Comment getItem(int i) {
-            return mComments.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            View rowView = view;
-
-            ViewHolder vh;
-
-            if (rowView == null) {
-                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-                rowView = inflater.inflate(R.layout.item_comment, viewGroup, false);
-                vh = new ViewHolder(rowView);
-                rowView.setTag(vh);
-            } else {
-                vh = (ViewHolder) rowView.getTag();
+        public Cursor swapCursor(Cursor newCursor) {
+            if (newCursor == mCursor) {
+                return null;
             }
+            Cursor oldCursor = mCursor;
+            if (oldCursor != null) {
+                if (mChangeObserver != null) oldCursor.unregisterContentObserver(mChangeObserver);
+                if (mDataSetObserver != null) oldCursor.unregisterDataSetObserver(mDataSetObserver);
+            }
+            mCursor = newCursor;
+            if (newCursor != null) {
+                if (mChangeObserver != null) newCursor.registerContentObserver(mChangeObserver);
+                if (mDataSetObserver != null) newCursor.registerDataSetObserver(mDataSetObserver);
+                mRowIDColumn = newCursor.getColumnIndexOrThrow("id");
+                mDataValid = true;
+                // notify the observers about the new cursor
+                notifyDataSetChanged();
+            } else {
+                mRowIDColumn = -1;
+                mDataValid = false;
+                // notify the observers about the lack of a data set
+                notifyDataSetInvalidated();
+            }
+            return oldCursor;
+        }
 
-            final Comment comment = getItem(i);
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            ViewHolder vh = (ViewHolder) view.getTag();
+            final Comment comment = DataUtils.convertCursorToComment(cursor);
             vh.commentAuthor.setText(comment.getAuthor());
             long now = new Date().getTime();
             vh.commentTime.setText(Utils.getRelativeTime(now, comment.getTime().getValue()));
             vh.commentText.setText(Html.fromHtml(comment.getText() != null ? comment.getText() : ""));
-
-            return rowView;
         }
 
         static class ViewHolder {

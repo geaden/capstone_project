@@ -14,8 +14,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.geaden.android.hackernewsreader.app.R;
-import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
+import com.geaden.android.hackernewsreader.app.data.local.BookmarkModel;
+import com.geaden.android.hackernewsreader.app.data.local.CommentModel;
+import com.geaden.android.hackernewsreader.app.data.local.StoryModel;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 
 import org.hamcrest.Description;
@@ -126,9 +128,9 @@ public class StoriesScreenTest {
                 protected void beforeActivityLaunched() {
                     super.beforeActivityLaunched();
                     // Doing this in @Before generates a race condition.
-                    ((StoriesApplication) InstrumentationRegistry.getTargetContext()
-                            .getApplicationContext()).getStoriesRepositoryComponent()
-                            .getStoriesRepository().deleteAllStories();
+                    new BookmarkModel().delete();
+                    new CommentModel().delete();
+                    new StoryModel().delete();
                 }
             };
 

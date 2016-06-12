@@ -1,20 +1,22 @@
 package com.geaden.android.hackernewsreader.app.storydetail;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
 
 import com.geaden.android.hackernewsreader.app.R;
+import com.geaden.android.hackernewsreader.app.data.LoaderProvider;
+import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
-import com.geaden.android.hackernewsreader.app.data.StoryLoader;
-import com.geaden.android.hackernewsreader.app.util.Utils;
+import com.geaden.android.hackernewsreader.app.util.DataUtils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.DateTime;
 
 import java.util.Date;
-import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -25,19 +27,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @author Gennady Denisov
  */
 public class StoryDetailPresenter implements StoryDetailContract.Presenter,
-        LoaderManager.LoaderCallbacks<Story> {
+        StoriesRepository.LoadDataCallback, LoaderManager.LoaderCallbacks<Cursor>,
+        StoriesDataSource.GetStoryCallback {
 
-    private static final int STORY_QUERY = 2;
+    private static final int STORY_LOADER = 2;
 
     private final StoriesRepository mStoriesRepository;
 
     private final StoryDetailContract.View mStoryDetailView;
 
-    private StoryLoader mStoryLoader;
+    private final LoaderProvider mLoaderProvider;
 
     private LoaderManager mLoadManager;
-
-    private List<Long> mBookmarkedStories;
 
     @Nullable
     private String mStoryId;
@@ -47,16 +48,17 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
 
     @Nullable
     private String mStoryTitle;
+    private boolean mBookmark;
 
-    public StoryDetailPresenter(@Nullable String storyId,
+    public StoryDetailPresenter(@NonNull String storyId,
+                                @NonNull LoaderProvider loaderProvider,
                                 @NonNull StoriesRepository storiesRepository,
                                 @NonNull StoryDetailContract.View storyDetailView,
-                                @NonNull StoryLoader storyLoader,
                                 @NonNull LoaderManager loadManager) {
-        mStoryId = storyId;
+        mStoryId = checkNotNull(storyId, "storyId cannot be null!");
+        mLoaderProvider = checkNotNull(loaderProvider, "loaderProvider cannot be null!");
         mStoriesRepository = checkNotNull(storiesRepository, "storiesRepository cannot be null!");
         mStoryDetailView = checkNotNull(storyDetailView, "storyDetailView cannot be null!");
-        mStoryLoader = checkNotNull(storyLoader, "storyLoader cannot be null!");
         mLoadManager = checkNotNull(loadManager, "loaderManager cannot be null!");
 
         mStoryDetailView.setPresenter(this);
@@ -64,19 +66,51 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
 
     @Override
     public void start() {
-        mLoadManager.initLoader(STORY_QUERY, null, this);
+        loadStory();
     }
+
+    private void loadStory() {
+        mStoryDetailView.setLoadingIndicator(true);
+        mLoadManager.initLoader(STORY_LOADER, null, this);
+    }
+
+    @Override
+    public void onStoryLoaded(Story story) {
+        // no-op, see #onDataLoaded
+
+    }
+
+    @Override
+    public void onDataNotAvailable() {
+        mStoryDetailView.showMissingStory();
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // no-op
+    }
+
 
     /**
      * Loads story data into view.
      *
-     * @param story the story to show.
+     * @param data {@link Cursor} containing story data.
      */
-    private void showStory(Story story) {
+    private void showStory(Cursor data) {
+
+        Pair<Story, Boolean> storyBookmarkPair = DataUtils.convertCursorToStory(data);
+
+        Story story = storyBookmarkPair.first;
+        mBookmark = storyBookmarkPair.second;
+
         String title = story.getTitle();
         String content = story.getContent();
         String author = story.getAuthor();
         DateTime published = story.getTime();
+
+        mStoryUrl = story.getUrl();
+        mStoryTitle = title;
 
         if (title != null && title.isEmpty()) {
             mStoryDetailView.hideStoryTitle();
@@ -102,9 +136,7 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
             mStoryDetailView.hideStoryTime();
         }
 
-        boolean bookmarked = Utils.checkIfBookmarked(story.getId(), mBookmarkedStories);
-
-        if (bookmarked) {
+        if (mBookmark) {
             mStoryDetailView.showStoryBookmarked();
         } else {
             mStoryDetailView.showStoryNotBookmarked();
@@ -121,29 +153,42 @@ public class StoryDetailPresenter implements StoryDetailContract.Presenter,
         mStoryDetailView.setLoadingIndicator(false);
     }
 
-    @Override
-    public Loader<Story> onCreateLoader(int id, Bundle args) {
-        if (mStoryId == null) {
-            return null;
-        }
-        mStoryDetailView.setLoadingIndicator(true);
-        return mStoryLoader;
+    public void toggleStoryBookmark() {
+        if (mBookmark) removeBookmark();
+        else addBookmark();
     }
 
     @Override
-    public void onLoadFinished(Loader<Story> loader, Story story) {
-        if (story != null) {
-            mStoryUrl = story.getUrl();
-            mStoryTitle = story.getTitle();
-            showStory(story);
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return mLoaderProvider.createStoryLoader(mStoryId);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data != null) {
+            if (data.moveToLast()) {
+                onDataLoaded(data);
+            } else {
+                onDataEmpty();
+            }
         } else {
-            mStoryDetailView.showMissingStory();
+            onDataNotAvailable();
         }
     }
 
     @Override
-    public void onLoaderReset(Loader<Story> loader) {
-        // no-op
+    public void onDataLoaded(Cursor data) {
+        showStory(data);
+    }
+
+    @Override
+    public void onDataEmpty() {
+        mStoryDetailView.showMissingStory();
+    }
+
+    @Override
+    public void onDataReset() {
+
     }
 
     @Override

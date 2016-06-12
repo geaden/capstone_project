@@ -54,6 +54,12 @@
                 android:value=".stories.StoriesActivity" />
         </activity>
 
+        <!-- Content provider -->
+        <provider
+            android:name=".data.local.StoriesDatabase_Provider"
+            android:authorities="@string/content_authority"
+            android:exported="true" />
+
         <!-- [START manifest_service] -->
         <service
             android:name=".gcm.StoriesPeriodicTaskService"

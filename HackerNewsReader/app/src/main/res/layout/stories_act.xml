@@ -5,9 +5,9 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".stories.StoriesActivity"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    tools:context=".stories.StoriesActivity"
+    tools:openDrawer="close">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,6 +19,19 @@
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true">
 
+            <TextView
+                android:id="@+id/current_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimaryDark"
+                android:gravity="center"
+                android:padding="@dimen/filter_label_padding"
+                android:text="@string/bookmarks_only"
+                android:textAllCaps="true"
+                android:textColor="@android:color/white"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -27,6 +40,7 @@
                 android:minHeight="?attr/actionBarSize"
                 android:theme="@style/Toolbar"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
         </android.support.design.widget.AppBarLayout>
 
         <android.support.design.widget.CoordinatorLayout

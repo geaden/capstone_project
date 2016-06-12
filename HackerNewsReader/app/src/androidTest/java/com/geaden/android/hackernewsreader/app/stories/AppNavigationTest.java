@@ -82,8 +82,6 @@ public class AppNavigationTest {
 
     @Test
     public void clickOnBookmarksOnlyNavigationItem_LoadsBookmarksOnly() {
-
-
         mRepository.addBookmark("1");
 
         // Open Drawer to click on navigation.
@@ -98,6 +96,8 @@ public class AppNavigationTest {
         boolean filtered = Utils.getFilter(InstrumentationRegistry.getTargetContext());
 
         assertThat(filtered, is(true));
+
+        onView(withId(R.id.current_filter)).check(matches(isDisplayed()));
     }
 
     @Test

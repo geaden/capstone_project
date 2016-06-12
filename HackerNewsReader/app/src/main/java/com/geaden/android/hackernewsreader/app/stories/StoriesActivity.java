@@ -1,7 +1,6 @@
 package com.geaden.android.hackernewsreader.app.stories;
 
 import android.Manifest;
-import android.app.AlarmManager;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,7 +34,7 @@ import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
 import com.geaden.android.hackernewsreader.app.about.AboutActivity;
 import com.geaden.android.hackernewsreader.app.data.AppProfile;
-import com.geaden.android.hackernewsreader.app.data.StoriesLoader;
+import com.geaden.android.hackernewsreader.app.data.LoaderProvider;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
 import com.geaden.android.hackernewsreader.app.gcm.LoadBookmarksTaskService;
 import com.geaden.android.hackernewsreader.app.gcm.StoriesPeriodicTaskService;
@@ -87,6 +86,9 @@ public class StoriesActivity extends AppCompatActivity implements
     @Bind(R.id.nav_view)
     NavigationView mNavView;
 
+    @Bind(R.id.current_filter)
+    TextView mCurrentFilterTextView;
+
     private ActionBarDrawerToggle mDrawerToggle;
 
     SignInContract.Presenter mSignInPresenter;
@@ -102,7 +104,6 @@ public class StoriesActivity extends AppCompatActivity implements
     private Menu mMenu;
 
     private GcmNetworkManager mGcmNetworkManager;
-    private AlarmManager mAlarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,26 +166,26 @@ public class StoriesActivity extends AppCompatActivity implements
                     getSupportFragmentManager(), storiesFragment, R.id.contentFrame);
         }
 
-        // Create the presenter
-        StoriesLoader storiesLoader = new StoriesLoader(getApplicationContext(), mStoriesRepository);
+        LoaderProvider loaderProvider = new LoaderProvider(this);
+
+        // Load previously saved state, if available.
+        StoriesFilter storiesFilter = StoriesFilter.from(StoriesFilterType.ALL_STORIES);
+        if (savedInstanceState != null) {
+            StoriesFilterType currentFiltering =
+                    (StoriesFilterType) savedInstanceState.getSerializable(CURRENT_FILTERING_KEY);
+            storiesFilter = StoriesFilter.from(currentFiltering);
+        }
 
         mStoriesPresenter = new StoriesPresenter(
-                storiesLoader,
+                loaderProvider,
                 getSupportLoaderManager(),
                 mStoriesRepository,
-                storiesFragment
-        );
+                storiesFragment,
+                storiesFilter);
 
         if (checkGooglePlayServices()) {
             mSignInPresenter = new SignInPresenter(mGoogleApiClient, this);
             startPeriodicTask();
-        }
-
-        // Load previously saved state, if available.
-        if (savedInstanceState != null) {
-            StoriesFilterType currentFiltering =
-                    (StoriesFilterType) savedInstanceState.getSerializable(CURRENT_FILTERING_KEY);
-            mStoriesPresenter.setFiltering(currentFiltering);
         }
     }
 
@@ -413,7 +414,8 @@ public class StoriesActivity extends AppCompatActivity implements
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(CURRENT_FILTERING_KEY, mStoriesPresenter.getFiltering());
+        outState.putSerializable(CURRENT_FILTERING_KEY,
+                mStoriesPresenter.getFiltering().getStoriesFilterType());
         super.onSaveInstanceState(outState);
     }
 
@@ -594,6 +596,15 @@ public class StoriesActivity extends AppCompatActivity implements
     public void hidePhoto() {
         mNavViewHolder.profilePhoto.setImageDrawable(ContextCompat.getDrawable(this,
                 R.drawable.person_image_empty));
+    }
+
+    public void showCurrentFilterLabel() {
+        mCurrentFilterTextView.setVisibility(View.VISIBLE);
+
+    }
+
+    public void hideCurrentFilterLabel() {
+        mCurrentFilterTextView.setVisibility(View.GONE);
     }
 
     public static class NavigationViewHolder {

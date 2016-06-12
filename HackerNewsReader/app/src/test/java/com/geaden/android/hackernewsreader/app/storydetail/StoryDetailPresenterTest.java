@@ -1,10 +1,14 @@
 package com.geaden.android.hackernewsreader.app.storydetail;
 
+import android.database.Cursor;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
 
+import com.geaden.android.hackernewsreader.app.data.LoaderProvider;
+import com.geaden.android.hackernewsreader.app.data.MockCursorProvider;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
-import com.geaden.android.hackernewsreader.app.data.StoryLoader;
+import com.geaden.android.hackernewsreader.app.util.DataUtils;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.api.client.util.DateTime;
@@ -20,6 +24,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Date;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.atLeast;
@@ -31,7 +36,7 @@ import static org.mockito.Mockito.verify;
  * @author Gennady Denisov
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(Utils.class)
+@PrepareForTest({Utils.class, DataUtils.class})
 public class StoryDetailPresenterTest {
 
     private static final String TITLE_TEST = "foo";
@@ -47,7 +52,7 @@ public class StoryDetailPresenterTest {
     private StoryDetailContract.View mStoryView;
 
     @Mock
-    private StoryLoader mStoryLoader;
+    private LoaderProvider mLoaderProvider;
 
     @Mock
     private LoaderManager mLoaderManager;
@@ -57,21 +62,32 @@ public class StoryDetailPresenterTest {
 
     private StoryDetailPresenter mStoryDetailPresenter;
 
+    private MockCursorProvider.StoryMockCursor mStoryCursor;
+
     private Story mStory;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        PowerMockito.mockStatic(Utils.class);
-        PowerMockito.when(Utils.checkIfBookmarked(anyLong(), anyList())).thenReturn(false);
+        PowerMockito.mockStatic(Utils.class, DataUtils.class);
+
         mStory = createStory();
+
+        PowerMockito.when(DataUtils.convertCursorToStory(any(Cursor.class)))
+                .thenReturn(new Pair<>(mStory, false));
+        PowerMockito.when(Utils.checkIfBookmarked(anyLong(), anyList())).thenReturn(false);
+
+        mStoryCursor = MockCursorProvider.createStoryCursor();
     }
 
     @Test
     public void getStoryFromRepositoryAndLoadIntoView() {
+        // Get a reference to a class under test.
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
-        mStoryDetailPresenter.onLoadFinished(mLoader, mStory);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
+
+        // When tasks presenter is asked to open a story.
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         // Then progress indicator is hidden and title, content, author and publishing date
         // are shown in Ui.
@@ -84,8 +100,8 @@ public class StoryDetailPresenterTest {
     @Test
     public void openStoryComments() {
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
-        mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         mStoryDetailPresenter.openStoryComments();
 
@@ -95,8 +111,8 @@ public class StoryDetailPresenterTest {
     @Test
     public void bookmarkStory() {
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
-        mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         mStoryDetailPresenter.addBookmark();
 
@@ -107,8 +123,8 @@ public class StoryDetailPresenterTest {
     @Test
     public void unbookmarkStory() {
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
-        mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         mStoryDetailPresenter.removeBookmark();
 
@@ -119,9 +135,9 @@ public class StoryDetailPresenterTest {
     @Test
     public void shareStory() {
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
 
-        mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         mStoryDetailPresenter.shareStory();
 
@@ -131,9 +147,9 @@ public class StoryDetailPresenterTest {
     @Test
     public void openOriginalStory() {
         mStoryDetailPresenter = new StoryDetailPresenter(Long.toString(mStory.getId()),
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
 
-        mStoryDetailPresenter.onLoadFinished(mStoryLoader, mStory);
+        mStoryDetailPresenter.onLoadFinished(mLoader, mStoryCursor);
 
         mStoryDetailPresenter.openOriginalStory();
 
@@ -143,7 +159,7 @@ public class StoryDetailPresenterTest {
     @Test
     public void invalidStoryIsNotShown() {
         mStoryDetailPresenter = new StoryDetailPresenter(INVALID_STORY_ID,
-                mStoriesRepository, mStoryView, mStoryLoader, mLoaderManager);
+                mLoaderProvider, mStoriesRepository, mStoryView, mLoaderManager);
 
         mStoryDetailPresenter.onLoadFinished(mLoader, null);
 

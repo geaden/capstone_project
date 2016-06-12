@@ -12,8 +12,11 @@ import com.geaden.hackernewsreader.backend.hackernews.model.Story;
  *
  * @author Gennady Denisov
  */
-public class StoryLoader extends AsyncTaskLoader<Story>
-        implements StoriesRepository.StoriesRepositoryObserver {
+public class StoryLoader extends AsyncTaskLoader<Story> {
+
+    interface StoriesRepositoryObserver {
+        void onStoriesChanged();
+    }
 
     private final String mStoryId;
 
@@ -27,7 +30,7 @@ public class StoryLoader extends AsyncTaskLoader<Story>
 
     @Override
     public Story loadInBackground() {
-        return mRepository.getStory(mStoryId);
+        return null; // mRepository.getStory(mStoryId);
     }
 
     @Override
@@ -44,30 +47,29 @@ public class StoryLoader extends AsyncTaskLoader<Story>
     @Override
     protected void onStartLoading() {
         // Deliver any previously loaded data immediately if available.
-        if (mRepository.cachedStoriesAvailable()) {
-            deliverResult(mRepository.getCachedStory(mStoryId));
-        }
-
-        // Begin monitoring the underlying data source.
-        mRepository.addContentObserver(this);
-
-        if (takeContentChanged() || !mRepository.cachedStoriesAvailable()) {
-            // When a change has  been delivered or the repository cache isn't available, we force
-            // a load.
-            forceLoad();
-        }
+//        if (mRepository.cachedStoriesAvailable()) {
+//            deliverResult(mRepository.getCachedStory(mStoryId));
+//        }
+//
+//        // Begin monitoring the underlying data source.
+//        mRepository.addContentObserver(this);
+//
+//        if (takeContentChanged() || !mRepository.cachedStoriesAvailable()) {
+//            // When a change has  been delivered or the repository cache isn't available, we force
+//            // a load.
+//            forceLoad();
+//        }
     }
 
     @Override
     protected void onReset() {
         onStopLoading();
-        mRepository.removeContentObserver(this);
     }
 
-    @Override
-    public void onStoriesChanged() {
-        if (isStarted()) {
-            forceLoad();
-        }
-    }
+//    @Override
+//    public void onStoriesChanged() {
+//        if (isStarted()) {
+//            forceLoad();
+//        }
+//    }
 }

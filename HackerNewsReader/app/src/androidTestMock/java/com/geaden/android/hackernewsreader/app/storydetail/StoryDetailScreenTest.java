@@ -38,7 +38,7 @@ public class StoryDetailScreenTest {
     private static final String STORY_CONTENT = "lorem ipsum";
 
     @Rule
-    public ActivityTestRule<StoryDetailActivity> mTaskDetailActivityTestRule =
+    public ActivityTestRule<StoryDetailActivity> mStoryDetailActivityTestRule =
             new ActivityTestRule<>(StoryDetailActivity.class, true /* Initial touch mode  */,
                     false /* Lazily launch activity */);
 
@@ -56,7 +56,7 @@ public class StoryDetailScreenTest {
         // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
         Intent startIntent = new Intent();
         startIntent.putExtra(StoryDetailActivity.EXTRA_STORY_ID, "1");
-        mTaskDetailActivityTestRule.launchActivity(startIntent);
+        mStoryDetailActivityTestRule.launchActivity(startIntent);
     }
 
 
@@ -64,7 +64,7 @@ public class StoryDetailScreenTest {
     public void storyDetails_DisplayedInUi() throws Exception {
         startActivityWithWithStubbedStory();
 
-        // Check that the task title and description are displayed
+        // Check that the story title and content are displayed
         onView(withId(R.id.story_title)).check(matches(withText(STORY_TITLE)));
         onView(withId(R.id.story_content)).check(matches(withText(STORY_CONTENT)));
     }

@@ -12,14 +12,14 @@
 
     <string name="transition_story">transition_story</string>
 
-    <string name="loading_stories_error">Error occured while loading stories</string>
+    <string name="loading_stories_error">Error occurred while loading stories</string>
 
     <string name="top_stories_toolbar_title">Top stories</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="story_detail_read_original">View original</string>
     <string name="menu_story_comments">Comments</string>
     <string name="story_by">By <xliff:g name="by_author" example="me">%1$s</xliff:g></string>
-    <string name="no_data">No data available...</string>
+    <string name="no_data">No data available…</string>
     <string name="comments_toolbar_title">Comments</string>
     <string name="no_comments">No comments</string>
     <string name="share_story_intent_title">Share story</string>
@@ -36,7 +36,7 @@
     <string name="api_error_message">Error</string>
     <string name="close">Close</string>
     <string name="stories_menu_title_search">Search</string>
-    <string name="stories_search_hint">Search for stories...</string>
+    <string name="stories_search_hint">Search for stories…</string>
 
     <!-- Shown in the 'About' window of the app. -->
     <string name="about_main"><![CDATA[
@@ -54,12 +54,15 @@
     <string name="notif_text_new_stories_available">New stories available!</string>
 
     <!-- Preferences -->
-    <string name="pref_key_revoke">key_revoke</string>
+    <string name="pref_key_revoke" translatable="false">key_revoke</string>
     <string name="pref_revoke_access">Revoke access of HN Reader to your account</string>
     <string name="pref_revoke_access_title">Revoke access</string>
-    <string name="pref_key_notify">key_notify</string>
+
+    <string name="pref_key_notify" translatable="false">key_notify</string>
     <string name="pref_notify_summary">Notify about new stories from HN</string>
     <string name="pref_notify_title">Notify about new stories</string>
     <string name="pref_notify_disable">Disable notification on new stories</string>
     <string name="pref_notify_enable">Enable notification on new stories</string>
+
+    <string name="content_authority" translatable="false">com.geaden.android.hackernewsreader.app.provider</string>
 </resources>

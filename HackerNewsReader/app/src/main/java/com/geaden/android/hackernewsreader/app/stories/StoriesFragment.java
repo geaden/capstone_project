@@ -3,13 +3,14 @@ package com.geaden.android.hackernewsreader.app.stories;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -29,11 +30,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.storydetail.StoryDetailActivity;
+import com.geaden.android.hackernewsreader.app.util.DataUtils;
 import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -86,7 +85,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mStoriesAdapter = new StoriesAdapter(getContext(), new ArrayList<Story>(0), mItemListener);
+        mStoriesAdapter = new StoriesAdapter(getContext(), mItemListener);
     }
 
     @Override
@@ -184,7 +183,8 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
         sp.registerOnSharedPreferenceChangeListener(this);
         super.onResume();
         mPresenter.setFiltering(Utils.getFilter(getActivity())
-                ? StoriesFilterType.BOOKMARKED_STORIES : StoriesFilterType.ALL_STORIES);
+                ? StoriesFilter.from(StoriesFilterType.BOOKMARKED_STORIES) :
+                StoriesFilter.from(StoriesFilterType.ALL_STORIES));
         mPresenter.start();
     }
 
@@ -199,9 +199,9 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.pref_key_bookmarked_ony))) {
             if (Utils.getFilter(getActivity())) {
-                mPresenter.setFiltering(StoriesFilterType.BOOKMARKED_STORIES);
+                mPresenter.setFiltering(StoriesFilter.from(StoriesFilterType.BOOKMARKED_STORIES));
             } else {
-                mPresenter.setFiltering(StoriesFilterType.ALL_STORIES);
+                mPresenter.setFiltering(StoriesFilter.from(StoriesFilterType.ALL_STORIES));
             }
             mPresenter.loadStories(false);
         }
@@ -230,11 +230,21 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     }
 
     @Override
-    public void showStories(List<Story> stories) {
-        mStoriesAdapter.replaceData(stories);
-
+    public void showStories(Cursor stories) {
+        mStoriesAdapter.swapData(stories);
         mRecyclerView.setVisibility(View.VISIBLE);
         mNoStoriesView.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void showBookmarksFilterLabel() {
+        ((StoriesActivity) getActivity()).showCurrentFilterLabel();
+    }
+
+    @Override
+    public void showAllFilterLabel() {
+        ((StoriesActivity) getActivity()).hideCurrentFilterLabel();
     }
 
     @Override
@@ -261,7 +271,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     }
 
     @Override
-    public void showNoBookmarkedStories() {
+    public void showNoBookmarks() {
         mRecyclerView.setVisibility(View.GONE);
         mNoStoriesView.setVisibility(View.VISIBLE);
         mNoStoriesTextView.setText(R.string.no_stories_bookmarked);
@@ -273,14 +283,11 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
     static class StoriesAdapter extends RecyclerView.Adapter<StoriesAdapter.ViewHolder> {
 
         private final Context mContext;
-        private List<Story> mStories;
+        private Cursor mCursor;
         private StoryItemListener mItemListener;
 
-        private List<Long> mBookmarkedStories;
-
-        public StoriesAdapter(Context context, List<Story> artists, StoryItemListener itemListener) {
+        public StoriesAdapter(Context context, StoryItemListener itemListener) {
             mContext = context;
-            setList(artists);
             mItemListener = itemListener;
         }
 
@@ -295,17 +302,18 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            Story story = mStories.get(position);
+            mCursor.moveToPosition(position);
+
+            Pair<Story, Boolean> storyBookmarksPair = DataUtils.convertCursorToStory(mCursor);
+
+            Story story = storyBookmarksPair.first;
+            boolean isBookmark = storyBookmarksPair.second;
 
             viewHolder.storyTitle.setText(story.getTitle());
             viewHolder.storyScore.setText(String.format("%s", story.getScore()));
             viewHolder.storyComments.setText(String.format("%s", story.getNoComments()));
-            boolean storyIsBookmarked = Utils.checkIfBookmarked(story.getId(), mBookmarkedStories);
-            if (storyIsBookmarked) {
-                viewHolder.storyBookmark.setVisibility(View.VISIBLE);
-            } else {
-                viewHolder.storyBookmark.setVisibility(View.GONE);
-            }
+            viewHolder.storyBookmark.setVisibility(isBookmark ? View.VISIBLE : View.GONE);
+
             // This app uses Glide for image loading
             if (null != story.getImageUrl()) {
                 Glide.with(mContext)
@@ -322,24 +330,29 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
 
         @Override
         public int getItemCount() {
-            return mStories.size();
-        }
-
-        private void setList(List<Story> artists) {
-            mStories = checkNotNull(artists);
+            if (null == mCursor) return 0;
+            return mCursor.getCount();
         }
 
         public Story getItem(int position) {
-            return mStories.get(position);
+            if (null == mCursor) return null;
+
+            mCursor.moveToPosition(position);
+
+            return DataUtils.convertCursorToStory(mCursor).first;
+        }
+
+        public Cursor getCursor() {
+            return mCursor;
         }
 
         /**
          * Replaces data and notifies about data set change. Alternative to CursorAdapter#swapData.
          *
-         * @param stories list or stories to replace.
+         * @param cursor cursor that holds {@link Story}s.
          */
-        public void replaceData(@NonNull List<Story> stories) {
-            setList(stories);
+        public void swapData(Cursor cursor) {
+            mCursor = cursor;
             notifyDataSetChanged();
         }
 

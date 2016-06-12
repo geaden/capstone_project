@@ -14,8 +14,8 @@ import android.view.View;
 
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
+import com.geaden.android.hackernewsreader.app.data.LoaderProvider;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
-import com.geaden.android.hackernewsreader.app.data.StoryLoader;
 import com.geaden.android.hackernewsreader.app.util.ActivityUtils;
 
 /**
@@ -84,11 +84,14 @@ public class StoryDetailActivity extends AppCompatActivity {
                 .getStoriesRepository();
 
         // Create the presenter
+        LoaderProvider loaderProvider = new LoaderProvider(getApplicationContext());
+
+        // Create the presenter
         new StoryDetailPresenter(
                 storyId,
+                loaderProvider,
                 storiesRepository,
                 storyDetailFragment,
-                new StoryLoader(getApplicationContext(), storyId, storiesRepository),
                 getSupportLoaderManager());
     }
 
