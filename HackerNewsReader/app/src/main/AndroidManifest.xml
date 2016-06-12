@@ -87,6 +87,27 @@
         </service>
         <!-- [END manifest_service] -->
 
+        <!-- Stories Widget -->
+        <receiver
+            android:name=".widget.StoriesWidgetProvider"
+            android:enabled="true"
+            android:label="@string/top_stories_toolbar_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.geaden.android.hackernewsreader.app.ACTION_DATA_UPDATED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_stories" />
+        </receiver>
+
+        <service
+            android:name=".widget.StoriesWidgetRemoteViewsService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
 </manifest>

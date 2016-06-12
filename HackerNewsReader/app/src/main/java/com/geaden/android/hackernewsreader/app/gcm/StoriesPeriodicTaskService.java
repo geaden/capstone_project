@@ -11,12 +11,17 @@ import android.util.Log;
 
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.StoriesApplication;
+import com.geaden.android.hackernewsreader.app.data.StoriesDataSource;
 import com.geaden.android.hackernewsreader.app.data.StoriesRepository;
+import com.geaden.android.hackernewsreader.app.data.local.StoryModel;
 import com.geaden.android.hackernewsreader.app.stories.StoriesActivity;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.geaden.hackernewsreader.backend.hackernews.model.Story;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
+import com.raizlabs.android.dbflow.sql.language.ConditionGroup;
+import com.raizlabs.android.dbflow.structure.provider.ContentUtils;
 
 import java.util.List;
 
@@ -31,6 +36,9 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
     private static final int NEW_STORIES_NOTIF = 0;
     StoriesRepository mStoriesRepository;
 
+    public static final String ACTION_DATA_UPDATED =
+            "com.geaden.android.hackernewsreader.app.ACTION_DATA_UPDATED";
+
     @Override
     public int onRunTask(TaskParams taskParams) {
         Log.d(TAG, "Loading stories periodic task.");
@@ -38,24 +46,45 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
         mStoriesRepository = ((StoriesApplication) getApplication())
                 .getStoriesRepositoryComponent()
                 .getStoriesRepository();
-        // TODO: Fix me...
 
-//        List<Story> currentStories = mStoriesRepository.getStories();
-//        long latestStoryId = getLatestStoryId(currentStories);
-//        mStoriesRepository.deleteAllStories();
-//        List<Story> updatedStories = mStoriesRepository.getStories();
-//        long updatedStoryId = getLatestStoryId(updatedStories);
-//        if (Utils.getEmailAccount(this) != null) {
-//            // Request bookmarks only if user is signed in.
-//            mStoriesRepository.getBookmarks(true);
-//        }
-//
-//        if (latestStoryId != updatedStoryId) {  // Very rough assumption about new content...
-//            // Notify user about updates...
-//            if (Utils.checkNotify(this)) {
-//                showNotification();
-//            }
-//        }
+
+        List<StoryModel> currentStories = ContentUtils.queryList(StoryModel.CONTENT_URI,
+                StoryModel.class, ConditionGroup.clause(), null);
+
+        final long latestStoryId = getLatestStoryId(currentStories);
+        mStoriesRepository.deleteAllStories();
+        mStoriesRepository.getStories(new StoriesDataSource.GetStoriesCallback() {
+            @Override
+            public void onStoriesLoaded(List<Story> stories) {
+                List<StoryModel> updateStories = ContentUtils.queryList(StoryModel.CONTENT_URI,
+                        StoryModel.class, ConditionGroup.clause(), null);
+
+                final long updateStoryId = getLatestStoryId(updateStories);
+
+                if (latestStoryId != updateStoryId) {
+                    if (Utils.checkNotify(StoriesPeriodicTaskService.this)) {
+                        showNotification();
+                    }
+                }
+
+                updateWidgets();
+            }
+
+            @Override
+            public void onDataNotAvailable() {
+
+            }
+        });
+
+        if (Utils.getEmailAccount(this) != null) {
+            // Request bookmarks only if user is signed in.
+            mStoriesRepository.getBookmarks(new StoriesDataSource.GetBookmarksCallback() {
+                @Override
+                public void onBookmarksLoaded(List<Story> bookmarks) {
+
+                }
+            });
+        }
 
         return GcmNetworkManager.RESULT_SUCCESS;
     }
@@ -66,10 +95,10 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
      * @param stories list of stories.
      * @return latest story id.
      */
-    private long getLatestStoryId(List<Story> stories) {
+    private long getLatestStoryId(List<StoryModel> stories) {
         long latestStoryId = -1L;
         if (stories != null && stories.size() > 0) {
-            latestStoryId = stories.get(0).getId();
+            latestStoryId = stories.get(0).getStory().getId();
         }
         return latestStoryId;
     }
@@ -106,5 +135,12 @@ public class StoriesPeriodicTaskService extends GcmTaskService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(NEW_STORIES_NOTIF, mBuilder.build());
+    }
+
+    private void updateWidgets() {
+        // Setting the package ensures that only components in our app will receive the broadcast
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+                .setPackage(getPackageName());
+        sendBroadcast(dataUpdatedIntent);
     }
 }

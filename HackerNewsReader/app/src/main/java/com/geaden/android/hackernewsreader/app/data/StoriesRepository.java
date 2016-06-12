@@ -60,6 +60,7 @@ public class StoriesRepository implements StoriesDataSource {
             @Override
             public void onStoriesLoaded(List<Story> stories) {
                 refreshLocalDataSourceWithStories(stories);
+                callback.onStoriesLoaded(stories);
             }
 
             @Override
@@ -122,6 +123,7 @@ public class StoriesRepository implements StoriesDataSource {
             @Override
             public void onBookmarksLoaded(List<Story> bookmarks) {
                 refreshLocalDataSourceWithBookmarks(bookmarks);
+                callback.onBookmarksLoaded(bookmarks);
             }
         });
 

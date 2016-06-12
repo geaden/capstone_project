@@ -65,4 +65,5 @@
     <string name="pref_notify_enable">Enable notification on new stories</string>
 
     <string name="content_authority" translatable="false">com.geaden.android.hackernewsreader.app.provider</string>
+    <string name="empty_string">-</string>
 </resources>
