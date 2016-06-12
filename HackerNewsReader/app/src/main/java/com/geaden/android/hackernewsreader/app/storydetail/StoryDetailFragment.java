@@ -279,6 +279,10 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
         mStoryBookmark.setImageDrawable(
                 ContextCompat.getDrawable(getActivity(), R.drawable.ic_bookmark_white_24px));
         mStoryBookmark.setTag(R.drawable.ic_bookmark_white_24px);
+        // Hide bookmarking from non logged in user...
+        if (Utils.getEmailAccount(getActivity()) == null) {
+            mStoryBookmark.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -286,6 +290,10 @@ public class StoryDetailFragment extends Fragment implements StoryDetailContract
         mStoryBookmark.setImageDrawable(
                 ContextCompat.getDrawable(getActivity(), R.drawable.ic_bookmark_border_white_24px));
         mStoryBookmark.setTag(R.drawable.ic_bookmark_border_white_24px);
+        // Hide bookmarking from non logged in user...
+        if (Utils.getEmailAccount(getActivity()) == null) {
+            mStoryBookmark.setVisibility(View.GONE);
+        }
 
     }
 

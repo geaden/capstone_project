@@ -53,9 +53,9 @@
     <dimen name="list_icon">40dp</dimen>
     <dimen name="widget_text_width">28dp</dimen>
     <dimen name="widget_text_space">8dp</dimen>
-    <dimen name="widget_text_size">18dp</dimen>
+    <dimen name="widget_text_size">14dp</dimen>
     <dimen name="widget_title_padding">8dp</dimen>
-    <dimen name="widget_title_text_size">24dp</dimen>
+    <dimen name="widget_title_text_size">16dp</dimen>
     <dimen name="widget_stories_default_height">180dp</dimen>
     <dimen name="widget_stories_min_resize_height">@dimen/widget_stories_default_height</dimen>
     <dimen name="widget_stories_min_resize_width">220dp</dimen>

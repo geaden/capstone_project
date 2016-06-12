@@ -18,6 +18,7 @@
             android:id="@+id/widget_image"
             android:layout_width="?android:attr/listPreferredItemHeight"
             android:layout_height="?android:attr/listPreferredItemHeight"
+            android:scaleType="centerCrop"
             android:src="@drawable/story_image_default" />
 
         <LinearLayout

@@ -302,6 +302,9 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
+            if (mCursor.isClosed()) {
+                return;
+            }
             mCursor.moveToPosition(position);
 
             Pair<Story, Boolean> storyBookmarksPair = DataUtils.convertCursorToStory(mCursor);
@@ -318,6 +321,7 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
             if (null != story.getImageUrl()) {
                 Glide.with(mContext)
                         .load(story.getImageUrl())
+                        .asBitmap()
                         .placeholder(R.drawable.story_image_default)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(viewHolder.storyImage);
@@ -387,8 +391,8 @@ public class StoriesFragment extends Fragment implements StoriesContract.View,
             @Override
             public void onClick(View v) {
                 int position = getAdapterPosition();
-                Story artist = getItem(position);
-                mItemListener.onStoryClicked(artist, storyImage);
+                Story story = getItem(position);
+                mItemListener.onStoryClicked(story, storyImage);
             }
         }
     }

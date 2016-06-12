@@ -85,9 +85,8 @@ public class StoriesRemoteDataSource implements StoriesDataSource {
 
     @Override
     public void getStories(@NonNull GetStoriesCallback callback) {
-        List<Story> stories = null;
         try {
-            stories = mAPi.getTopstories().execute().getItems();
+            List<Story> stories = mAPi.getTopstories().execute().getItems();
             callback.onStoriesLoaded(stories);
         } catch (IOException e) {
             Log.e(TAG, "Unable to get stories from remote", e);

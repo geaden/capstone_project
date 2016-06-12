@@ -3,6 +3,7 @@ package com.geaden.android.hackernewsreader.app.stories;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 
@@ -36,6 +37,9 @@ public class StoriesPresenter implements StoriesContract.Presenter, StoriesRepos
 
     private StoriesFilter mCurrentFiltering;
 
+    @VisibleForTesting
+    boolean mFirstLoad = true;
+
     public StoriesPresenter(@NonNull LoaderProvider loaderProvider,
                             @NonNull LoaderManager loaderManager,
                             @NonNull StoriesRepository storiesRepository,
@@ -51,14 +55,20 @@ public class StoriesPresenter implements StoriesContract.Presenter, StoriesRepos
 
     @Override
     public void start() {
-        loadStories(true);
+        loadStories(false);
     }
 
     @Override
     public void loadStories(boolean forceUpdate) {
         mStoriesView.setLoadingIndicator(true);
-        if (forceUpdate) {
-            mStoriesRepository.getStories(this);
+        if (forceUpdate || mFirstLoad) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mStoriesRepository.getStories(StoriesPresenter.this);
+                }
+            }).start();
+            mFirstLoad = false;
         }
 
         if (mLoaderManager.getLoader(STORIES_LOADER) == null) {

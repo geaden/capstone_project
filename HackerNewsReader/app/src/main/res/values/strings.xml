@@ -48,7 +48,7 @@
 
     <!-- Permissions -->
     <string name="permissions_read_contacts_title">Read contacts required</string>
-    <string name="permissiona_read_contacts_text">In order to properly add bookmarks you need to grant read contacts permission</string>
+    <string name="permissiona_read_contacts_text">In order to add/remove bookmarks you need to grant read contacts permission</string>
 
     <!-- Notifications -->
     <string name="notif_text_new_stories_available">New stories available!</string>

@@ -16,8 +16,14 @@ gradle clean checkAll -PdisablePreDex
 
 Make sure emulator is running.
 
+## Debugging GCM Tasks
+
+```bash
+adb shell dumpsys activity service GcmService --endpoints StoriesPeriodicTaskService
+```
+
 ## Links
 
 - [Google Services Quickstart](https://github.com/googlesamples/google-services)
 - [Example app to use Android application and GAE Endpoints](https://github.com/udacity/conference-central-android-app)
-
+- [Android Architecture Samples](https://github.com/googlesamples/android-architecture)

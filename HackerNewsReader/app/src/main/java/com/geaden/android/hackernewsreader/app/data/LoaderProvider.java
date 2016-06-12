@@ -51,7 +51,7 @@ public class LoaderProvider {
         if (null != query) {
             selection = DatabaseUtils.concatenateWhere(selection, "LOWER(" + StoryModel_Table.title
                     + ") LIKE LOWER(?)");
-            selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[]{query + '%'});
+            selectionArgs = DatabaseUtils.appendSelectionArgs(selectionArgs, new String[]{'%' + query + '%'});
         }
 
         return new CursorLoader(

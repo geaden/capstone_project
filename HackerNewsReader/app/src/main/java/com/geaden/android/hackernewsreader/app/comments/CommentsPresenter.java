@@ -52,11 +52,15 @@ public class CommentsPresenter implements CommentsContract.Presenter,
     }
 
     @Override
-    public void loadComments(String storyId, boolean forceUpdate) {
-        mCommentsView.setLoadingIndicator(true);
+    public void loadComments(final String storyId, boolean forceUpdate) {
         mCommentsView.setLoadingIndicator(true);
         if (forceUpdate) {
-            mStoriesRepository.getComments(storyId, this);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mStoriesRepository.getComments(storyId, CommentsPresenter.this);
+                }
+            }).start();
         }
 
         if (mLoaderManager.getLoader(COMMENTS_LOADER) == null) {
@@ -78,8 +82,6 @@ public class CommentsPresenter implements CommentsContract.Presenter,
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCommentsView.setLoadingIndicator(false);
-
         if (data != null) {
             if (data.moveToFirst()) {
                 onDataLoaded(data);

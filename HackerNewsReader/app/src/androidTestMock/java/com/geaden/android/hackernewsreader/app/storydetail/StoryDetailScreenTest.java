@@ -1,6 +1,7 @@
 package com.geaden.android.hackernewsreader.app.storydetail;
 
 import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
@@ -9,11 +10,13 @@ import android.widget.ImageView;
 
 import com.geaden.android.hackernewsreader.app.R;
 import com.geaden.android.hackernewsreader.app.data.local.BookmarkModel;
+import com.geaden.android.hackernewsreader.app.util.Utils;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,10 +56,17 @@ public class StoryDetailScreenTest {
      * a particular story id, which is then loaded from the service API.
      */
     private void startActivityWithWithStubbedStory() {
+        // Add dummy account
+        Utils.saveEmailAccount(InstrumentationRegistry.getTargetContext(), "foo@bar.bz");
         // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
         Intent startIntent = new Intent();
         startIntent.putExtra(StoryDetailActivity.EXTRA_STORY_ID, "1");
         mStoryDetailActivityTestRule.launchActivity(startIntent);
+    }
+
+    @After
+    public void cleanUp() {
+        Utils.saveEmailAccount(InstrumentationRegistry.getTargetContext(), null);
     }
 
 
